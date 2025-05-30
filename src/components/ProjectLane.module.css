@@ -1,486 +1,511 @@
 .projectLaneContainer {
-  width: 300px;
-  background-color: #ffffff;
-  border: 3px solid #ccc; /* Default border, color overridden by style prop */
-  border-radius: 8px;
-  padding: 15px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  display: flex;
-  flex-direction: column;
-  /* min-height: 400px; Potentially set a min-height */
+    width: 300px;
+    background-color: #ffffff;
+    border: 3px solid #ccc; /* Default border, color overridden by style prop */
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    /* min-height: 400px; Potentially set a min-height */
 }
 
 .projectHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+.projectTitleContainer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-grow: 1;
 }
 
 .projectTitle {
-  margin: 0;
-  padding: 0;
-  font-size: 1.2em;
-  color: #333;
-  flex-grow: 1;
-  cursor: pointer; 
+    margin: 0;
+    padding: 0;
+    font-size: 1.2em;
+    color: #333;
+    flex-grow: 1;
+    cursor: pointer;
+}
+
+.editProjectBtn {
+    background: none;
+    border: none;
+    color: #666;
+    font-size: 0.9em;
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 3px;
+    line-height: 1;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+}
+
+.editProjectBtn:hover {
+    opacity: 1;
+    background-color: #f0f0f0;
 }
 
 .projectTitleInput {
-  font-size: 1.2em;
-  padding: 5px;
-  border: 1px solid #ccc;
-  border-radius: 3px;
-  flex-grow: 1;
-  margin-right: 10px;
+    font-size: 1.2em;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    flex-grow: 1;
+    margin-right: 10px;
 }
 
 .deleteProjectBtn {
-  background: none;
-  border: none;
-  color: #ff4d4f;
-  font-size: 1.2em;
-  cursor: pointer;
-  padding: 0 5px;
-  line-height: 1; /* Ensure consistent alignment */
+    background: none;
+    border: none;
+    color: #ff4d4f;
+    font-size: 1.2em;
+    cursor: pointer;
+    padding: 0 5px;
+    line-height: 1; /* Ensure consistent alignment */
 }
 
 .deleteProjectBtn:hover {
-  color: #cf1322;
+    color: #cf1322;
 }
 
 .taskList {
-  flex-grow: 1;
-  padding: 10px 0;
-  display: flex;
-  flex-direction: column;
-  gap: 10px; /* Space between task cards */
+    flex-grow: 1;
+    padding: 10px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* Space between task cards */
 }
 
 .taskCard {
-  padding: 10px;
-  border-radius: 6px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  display: flex; /* Allow for task header and content alignment */
-  flex-direction: column; /* Stack header and content */
+    padding: 10px;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    display: flex; /* Allow for task header and content alignment */
+    flex-direction: column; /* Stack header and content */
 }
 
 .taskHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px; /* Space between header and task items (once added) */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px; /* Space between header and task items (once added) */
 }
 
 .taskTitle {
-  margin: 0;
-  font-weight: bold;
-  color: #333;
-  flex-grow: 1; /* Allow title to take space */
-  cursor: pointer; /* Indicate it's interactive */
+    margin: 0;
+    font-weight: bold;
+    color: #333;
+    flex-grow: 1; /* Allow title to take space */
+    cursor: pointer; /* Indicate it's interactive */
 }
 
 .taskTitleInput {
-  font-size: 1em; /* Match task title font size */
-  padding: 4px;
-  border: 1px solid #ccc;
-  border-radius: 3px;
-  flex-grow: 1;
-  margin-right: 8px; /* Space before delete button */
-  font-weight: bold; /* Match task title font weight */
+    font-size: 1em; /* Match task title font size */
+    padding: 4px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    flex-grow: 1;
+    margin-right: 8px; /* Space before delete button */
+    font-weight: bold; /* Match task title font weight */
 }
 
 .deleteTaskBtn {
-  background: none;
-  border: none;
-  color: #a8a29e; /* Lighter delete icon for tasks */
-  font-size: 0.9em;
-  cursor: pointer;
-  padding: 0 3px;
-  line-height: 1;
+    background: none;
+    border: none;
+    color: #a8a29e; /* Lighter delete icon for tasks */
+    font-size: 0.9em;
+    cursor: pointer;
+    padding: 0 3px;
+    line-height: 1;
 }
 
 .deleteTaskBtn:hover {
-  color: #ff4d4f; /* Standard delete color on hover */
+    color: #ff4d4f; /* Standard delete color on hover */
 }
 
 .taskItemsContainer {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 10px;
 }
 
 .taskItem {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 4px 0; /* Small padding for items */
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0; /* Small padding for items */
 }
 
 .taskItemCheckbox {
-  margin: 0;
-  /* Consider custom styling for checkboxes if desired later */
+    margin: 0;
+    /* Consider custom styling for checkboxes if desired later */
 }
 
 .taskItemText {
-  flex-grow: 1;
-  font-size: 0.95em;
-  padding: 2px 0; /* Align with input if needed */
-  cursor: pointer; /* Indicate it's interactive */
+    flex-grow: 1;
+    font-size: 0.95em;
+    padding: 2px 0; /* Align with input if needed */
+    cursor: pointer; /* Indicate it's interactive */
 }
 
 .taskItemTextInput {
-  flex-grow: 1;
-  font-size: 0.95em;
-  padding: 1px 2px; /* Minimal padding to align with span */
-  border: 1px solid #999;
-  border-radius: 2px;
-  margin-right: 5px; /* Space before delete button */
+    flex-grow: 1;
+    font-size: 0.95em;
+    padding: 1px 2px; /* Minimal padding to align with span */
+    border: 1px solid #999;
+    border-radius: 2px;
+    margin-right: 5px; /* Space before delete button */
 }
 
 .deleteItemBtn {
-  background: none;
-  border: none;
-  color: #d1d5db; /* Very light gray for item delete */
-  font-size: 0.85em;
-  cursor: pointer;
-  padding: 0 2px;
-  line-height: 1;
-  visibility: hidden; /* Hidden by default */
+    background: none;
+    border: none;
+    color: #d1d5db; /* Very light gray for item delete */
+    font-size: 0.85em;
+    cursor: pointer;
+    padding: 0 2px;
+    line-height: 1;
+    visibility: hidden; /* Hidden by default */
 }
 
 .taskItem:hover .deleteItemBtn {
-  visibility: visible; /* Show on hover of the taskItem */
+    visibility: visible; /* Show on hover of the taskItem */
 }
 
 .deleteItemBtn:hover {
-  color: #ef4444; /* Red on hover */
+    color: #ef4444; /* Red on hover */
 }
 
 .completedItemText {
-  text-decoration: line-through;
-  color: #888;
+    text-decoration: line-through;
+    color: #888;
 }
 
 .completedSectionDetails {
-  margin-top: 10px;
-  border-top: 1px dashed #eee;
-  padding-top: 10px;
+    margin-top: 10px;
+    border-top: 1px dashed #eee;
+    padding-top: 10px;
 }
 
 .completedSectionSummary {
-  cursor: pointer;
-  font-weight: bold;
-  color: #555;
-  margin-bottom: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    color: #555;
+    margin-bottom: 5px;
 }
 
 .completedSectionSummary:hover {
-  color: #000;
+    color: #000;
 }
 
 .completedItemsContainer {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding-left: 20px; /* Indent completed items slightly */
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-left: 20px; /* Indent completed items slightly */
 }
 
 .completedTaskItem {
-  /* Can add specific styles for completed items if different from active beyond text-decoration */
+    /* Can add specific styles for completed items if different from active beyond text-decoration */
 }
 
 .addItemForm {
-  display: flex;
-  gap: 8px;
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 1px solid #f0f0f0;
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #f0f0f0;
 }
 
 .addItemInput {
-  flex-grow: 1;
-  padding: 6px;
-  border: 1px solid #d9d9d9;
-  border-radius: 4px;
-  font-size: 0.9em;
+    flex-grow: 1;
+    padding: 6px;
+    border: 1px solid #d9d9d9;
+    border-radius: 4px;
+    font-size: 0.9em;
 }
 
 .addItemBtn {
-  background-color: #1890ff; /* Blue for add item */
-  color: white;
-  border: none;
-  padding: 0px 10px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: bold;
-  font-size: 0.9em;
+    background-color: #1890ff; /* Blue for add item */
+    color: white;
+    border: none;
+    padding: 0px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.9em;
 }
 
 .addItemBtn:hover {
-  background-color: #096dd9;
+    background-color: #096dd9;
 }
 
 .noTasksMessage {
-  text-align: center;
-  color: #777;
-  font-style: italic;
-  padding: 20px 0;
+    text-align: center;
+    color: #777;
+    font-style: italic;
+    padding: 20px 0;
 }
 
 .addTaskForm {
-  display: flex;
-  gap: 10px;
-  margin-top: 15px;
-  padding-top: 15px;
-  border-top: 1px solid #f0f0f0;
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #f0f0f0;
 }
 
 .newTaskInput {
-  flex-grow: 1;
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+    flex-grow: 1;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
 }
 
 .addTaskBtn {
-  background-color: #52c41a; /* Green for add */
-  color: white;
-  border: none;
-  padding: 8px 15px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: bold;
+    background-color: #52c41a; /* Green for add */
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
 }
 
 .addTaskBtn:hover {
-  background-color: #389e0d;
+    background-color: #389e0d;
 }
 
 .projectFooter {
-  margin-top: auto; /* Pushes footer to the bottom */
-  padding-top: 10px;
-  font-size: 0.9em;
-  color: #777;
-  border-top: 1px solid #f0f0f0;
+    margin-top: auto; /* Pushes footer to the bottom */
+    padding-top: 10px;
+    font-size: 0.9em;
+    color: #777;
+    border-top: 1px solid #f0f0f0;
 }
 
 .taskFooter {
-  margin-top: 10px;
-  display: flex;
-  flex-direction: column; /* Stack assigned people and tagging popup */
-  gap: 8px;
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column; /* Stack assigned people and tagging popup */
+    gap: 8px;
 }
 
 .assignedPeopleContainer {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap; /* Allow avatars to wrap if many */
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap; /* Allow avatars to wrap if many */
 }
 
 .personAvatar {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background-color: #e0e0e0; /* Default avatar bg */
-  color: #555;
-  font-size: 0.8em;
-  font-weight: bold;
-  cursor: pointer; /* For removal */
-  border: 1px solid #ccc;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background-color: #e0e0e0; /* Default avatar bg */
+    color: #555;
+    font-size: 0.8em;
+    font-weight: bold;
+    cursor: pointer; /* For removal */
+    border: 1px solid #ccc;
 }
 
 .overflowAvatar {
-  background-color: #bdbdbd;
-  cursor: default;
+    background-color: #bdbdbd;
+    cursor: default;
 }
 
 .addPersonBtn {
-  background-color: transparent;
-  border: 1px dashed #ccc;
-  color: #555;
-  padding: 4px 8px;
-  border-radius: 14px; /* Pill shape */
-  cursor: pointer;
-  font-size: 0.85em;
-  margin-left: auto; /* Pushes button to the right if space allows */
+    background-color: transparent;
+    border: 1px dashed #ccc;
+    color: #555;
+    padding: 4px 8px;
+    border-radius: 14px; /* Pill shape */
+    cursor: pointer;
+    font-size: 0.85em;
+    margin-left: auto; /* Pushes button to the right if space allows */
 }
 
 .addPersonBtn:hover {
-  background-color: #f0f0f0;
-  border-color: #bbb;
+    background-color: #f0f0f0;
+    border-color: #bbb;
 }
 
 .personTaggingPopup {
-  margin-top: 8px;
-  padding: 10px;
-  background-color: #f9f9f9;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-top: 8px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .personNameInput {
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 3px;
-  font-size: 0.9em;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    font-size: 0.9em;
 }
 
 .personSuggestionsList {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  max-height: 100px; /* Limit height */
-  overflow-y: auto;
-  border: 1px solid #eee;
-  border-radius: 3px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 100px; /* Limit height */
+    overflow-y: auto;
+    border: 1px solid #eee;
+    border-radius: 3px;
 }
 
 .personSuggestionsList li {
-  padding: 6px 8px;
-  cursor: pointer;
-  font-size: 0.9em;
+    padding: 6px 8px;
+    cursor: pointer;
+    font-size: 0.9em;
 }
 
 .personSuggestionsList li:hover {
-  background-color: #e6f7ff;
+    background-color: #e6f7ff;
 }
 
 .personTaggingPopup button {
-  padding: 6px 10px;
-  border-radius: 3px;
-  border: 1px solid transparent;
-  cursor: pointer;
+    padding: 6px 10px;
+    border-radius: 3px;
+    border: 1px solid transparent;
+    cursor: pointer;
 }
 
 .confirmAddPersonBtn {
-  background-color: #52c41a;
-  color: white;
+    background-color: #52c41a;
+    color: white;
 }
 .confirmAddPersonBtn:hover {
-  background-color: #389e0d;
+    background-color: #389e0d;
 }
 
 .cancelAddPersonBtn {
-  background-color: #f5f5f5;
-  border-color: #ddd;
+    background-color: #f5f5f5;
+    border-color: #ddd;
 }
 .cancelAddPersonBtn:hover {
-  background-color: #e8e8e8;
+    background-color: #e8e8e8;
 }
 
 .reminderContainer {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 8px; /* Space it from person tagging if both are present */
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px; /* Space it from person tagging if both are present */
 }
 
 .reminderLabel {
-  font-size: 0.85em;
-  color: #555;
+    font-size: 0.85em;
+    color: #555;
 }
 
 .reminderInput {
-  padding: 4px 6px;
-  border: 1px solid #ccc;
-  border-radius: 3px;
-  font-size: 0.85em;
-  background-color: white; /* Ensure good contrast */
+    padding: 4px 6px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    font-size: 0.85em;
+    background-color: white; /* Ensure good contrast */
 }
 
 .clearReminderBtn {
-  background: none;
-  border: none;
-  color: #d1d5db;
-  font-size: 0.9em;
-  cursor: pointer;
-  padding: 0 3px;
-  line-height: 1;
+    background: none;
+    border: none;
+    color: #d1d5db;
+    font-size: 0.9em;
+    cursor: pointer;
+    padding: 0 3px;
+    line-height: 1;
 }
 
 .clearReminderBtn:hover {
-  color: #ef4444;
+    color: #ef4444;
 }
 
 .taskActionsContainer {
-  display: flex;
-  justify-content: flex-start; /* Align items (like color picker) to the start */
-  align-items: center;
-  gap: 10px;
-  margin-top: 8px;
-  position: relative; /* For positioning the color palette */
+    display: flex;
+    justify-content: flex-start; /* Align items (like color picker) to the start */
+    align-items: center;
+    gap: 10px;
+    margin-top: 8px;
+    position: relative; /* For positioning the color palette */
 }
 
 .colorPickerContainer {
-  position: relative; /* For palette positioning */
+    position: relative; /* For palette positioning */
 }
 
 .taskColorPickerButton {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  border: 1px solid #ccc;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1em; /* For emoji */
-  padding: 0;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1em; /* For emoji */
+    padding: 0;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .taskColorPickerButton:hover {
-  border-color: #999;
+    border-color: #999;
 }
 
 .colorPalette {
-  position: absolute;
-  bottom: 100%; /* Position above the button */
-  left: 0;
-  background-color: white;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  padding: 8px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  width: 160px; /* Adjust as needed for number of colors */
-  box-shadow: 0 2px 5px rgba(0,0,0,0.15);
-  z-index: 10; /* Ensure it's above other elements */
-  margin-bottom: 5px; /* Space from the button */
+    position: absolute;
+    bottom: 100%; /* Position above the button */
+    left: 0;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    width: 160px; /* Adjust as needed for number of colors */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+    z-index: 10; /* Ensure it's above other elements */
+    margin-bottom: 5px; /* Space from the button */
 }
 
 .colorOption {
-  width: 24px;
-  height: 24px;
-  border-radius: 4px;
-  border: 1px solid #eee;
-  cursor: pointer;
-  padding: 0;
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    border: 1px solid #eee;
+    cursor: pointer;
+    padding: 0;
 }
 
 .colorOption:hover {
-  border-color: #999;
-  transform: scale(1.1);
+    border-color: #999;
+    transform: scale(1.1);
 }
 
 .noColorOption {
-  background-color: #f0f0f0;
-  color: #333;
-  font-size: 1.1em;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-} 
+    background-color: #f0f0f0;
+    color: #333;
+    font-size: 1.1em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
