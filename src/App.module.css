@@ -1,182 +1,187 @@
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    text-align: center;
 }
 
 .logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
+    height: 6em;
+    padding: 1.5em;
+    will-change: filter;
+    transition: filter 300ms;
 }
 .logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
+    filter: drop-shadow(0 0 2em #646cffaa);
 }
 .logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+    filter: drop-shadow(0 0 2em #61dafbaa);
 }
 
 @keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+    a:nth-of-type(2) .logo {
+        animation: logo-spin infinite 20s linear;
+    }
 }
 
 .card {
-  padding: 2em;
+    padding: 2em;
 }
 
 .read-the-docs {
-  color: #888;
+    color: #888;
 }
 
 body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background-color: #f0f2f5; /* Default background */
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu',
+        'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: #f0f2f5; /* Default background */
 }
 
 .appContainer {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 }
 
 .appHeader {
-  background-color: #282c34;
-  padding: 20px;
-  color: white;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+    background-color: #282c34;
+    padding: 10px 20px;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .appHeader h1 {
-  margin: 0;
-  font-size: 1.5em;
+    margin: 0;
+    font-size: 1.5em;
 }
 
 .addProjectBtn {
-  padding: 8px 15px;
-  background-color: #61dafb;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: bold;
+    padding: 8px 15px;
+    background-color: #61dafb;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
 }
 
 .addProjectBtn:hover {
-  background-color: #21a1f1;
+    background-color: #21a1f1;
 }
 
 .dataPathDisplay {
-  font-size: 0.8em;
-  color: #ccc;
-  margin: 0;
+    font-size: 0.8em;
+    color: #ccc;
+    margin: 0;
 }
 
 .projectsGrid {
-  display: flex;
-  flex-wrap: wrap;
-  padding: 20px;
-  gap: 20px;
-  flex-grow: 1;
-  align-content: flex-start;
+    display: flex;
+    flex-wrap: wrap;
+    padding: 20px;
+    gap: 20px;
+    flex-grow: 1;
+    align-content: flex-start;
+    max-width: 1280px;
+    margin: 0 auto;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .centeredMessage {
-  width: 100%;
-  text-align: center;
-  padding: 50px;
-  color: #555;
-  font-size: 1.2em;
+    width: 100%;
+    text-align: center;
+    padding: 50px;
+    color: #555;
+    font-size: 1.2em;
 }
 
 .errorText {
-  color: red;
-  font-weight: bold;
+    color: red;
+    font-weight: bold;
 }
 
 .project-lane {
-  width: 300px;
-  /* min-height: 400px; /* Give some default height */
-  background-color: #ffffff;
-  border: 3px solid #ccc; /* Default border, color overridden by style prop */
-  border-radius: 8px;
-  padding: 15px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  display: flex;
-  flex-direction: column;
+    width: 300px;
+    /* min-height: 400px; /* Give some default height */
+    background-color: #ffffff;
+    border: 3px solid #ccc; /* Default border, color overridden by style prop */
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
 }
 
 .project-lane h2 {
-  margin-top: 0;
-  font-size: 1.2em;
-  color: #333;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 10px;
-  margin-bottom: 10px;
-  flex-grow: 1; /* Allow title to take space */
+    margin-top: 0;
+    font-size: 1.2em;
+    color: #333;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+    flex-grow: 1; /* Allow title to take space */
 }
 
 .project-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
 }
 
 .project-header h2 {
-  margin: 0; /* Remove default margins */
-  padding: 0; /* Remove default padding */
-  border-bottom: none; /* Remove duplicate border */
-  cursor: pointer; /* Indicate it's interactive */
+    margin: 0; /* Remove default margins */
+    padding: 0; /* Remove default padding */
+    border-bottom: none; /* Remove duplicate border */
+    cursor: pointer; /* Indicate it's interactive */
 }
 
-.project-header input[type="text"] {
-  font-size: 1.2em;
-  padding: 5px;
-  border: 1px solid #ccc;
-  border-radius: 3px;
-  flex-grow: 1;
-  margin-right: 10px; /* Space before delete button */
+.project-header input[type='text'] {
+    font-size: 1.2em;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    flex-grow: 1;
+    margin-right: 10px; /* Space before delete button */
 }
 
 .delete-project-btn {
-  background: none;
-  border: none;
-  color: #ff4d4f;
-  font-size: 1.2em;
-  cursor: pointer;
-  padding: 0 5px;
+    background: none;
+    border: none;
+    color: #ff4d4f;
+    font-size: 1.2em;
+    cursor: pointer;
+    padding: 0 5px;
 }
 
 .delete-project-btn:hover {
-  color: #cf1322;
+    color: #cf1322;
 }
 
 /* Placeholder for task card styling later */
 .task-card {
-  background-color: #f9f9f9; /* Light background for tasks */
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  padding: 10px;
-  margin-bottom: 10px;
+    background-color: #f9f9f9; /* Light background for tasks */
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 10px;
+    margin-bottom: 10px;
 }
