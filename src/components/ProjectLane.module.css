@@ -85,11 +85,15 @@
 }
 
 .taskCard {
+    background-color: #fffacd; /* Lemon Chiffon - a common sticky note color */
     padding: 10px;
-    border-radius: 6px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+    /* box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); */
+    box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.2); /* More pronounced shadow */
     display: flex; /* Allow for task header and content alignment */
     flex-direction: column; /* Stack header and content */
+    transform: rotate(0deg); /* Slight rotation for sticky note effect */
+    transition: transform 0.1s ease-in-out, box-shadow 0.1s ease-in-out; /* Smooth hover effect */
 }
 
 .taskHeader {
