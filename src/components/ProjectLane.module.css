@@ -259,14 +259,14 @@
 .addTaskForm {
     display: flex;
     gap: 10px;
-    margin-top: 15px;
-    padding-top: 15px;
-    border-top: 1px solid #f0f0f0;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #f0f0f0;
 }
 
 .newTaskInput {
     flex-grow: 1;
-    padding: 8px;
+    padding: 2px;
     border: 1px solid #ccc;
     border-radius: 4px;
 }

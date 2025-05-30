@@ -403,6 +403,20 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
                 </button>
             </div>
 
+            <div className={styles.addTaskForm}>
+                <input
+                    type='text'
+                    value={newTaskTitle}
+                    onChange={handleNewTaskChange}
+                    placeholder='New task title...'
+                    className={styles.newTaskInput}
+                    onKeyDown={(e) => e.key === 'Enter' && handleAddNewTask()}
+                />
+                <button onClick={handleAddNewTask} className={styles.addTaskBtn}>
+                    + Add Task
+                </button>
+            </div>
+
             <div className={styles.taskList}>
                 {project.tasks.map((task) => {
                     const assignedPeopleDetails = getAssignedPeopleDetails(task.id);
@@ -634,20 +648,6 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
                 {project.tasks.length === 0 && (
                     <p className={styles.noTasksMessage}>No tasks yet. Add one below!</p>
                 )}
-            </div>
-
-            <div className={styles.addTaskForm}>
-                <input
-                    type='text'
-                    value={newTaskTitle}
-                    onChange={handleNewTaskChange}
-                    placeholder='New task title...'
-                    className={styles.newTaskInput}
-                    onKeyDown={(e) => e.key === 'Enter' && handleAddNewTask()}
-                />
-                <button onClick={handleAddNewTask} className={styles.addTaskBtn}>
-                    + Add Task
-                </button>
             </div>
         </div>
     );
