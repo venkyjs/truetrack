@@ -159,9 +159,11 @@ const App: FC = () => {
         setProjects(projects.map((p) => (p.id === projectId ? { ...p, title: newTitle } : p)));
     };
 
-    const handleUpdateProjectDefaultTaskColor = (projectId: string, newTaskColor: string) => {
+    const handleUpdateProjectDefaultTaskColor = (projectId: string, newTaskColor?: string) => {
         setProjects(
-            projects.map((p) => (p.id === projectId ? { ...p, taskColor: newTaskColor } : p))
+            projects.map((p) =>
+                p.id === projectId ? { ...p, taskColor: newTaskColor || getRandomPastelColor() } : p
+            )
         );
     };
 
@@ -247,6 +249,7 @@ const App: FC = () => {
                         }}
                         onDeleteProject={handleDeleteProject}
                         onUpdateProjectTitle={handleUpdateProjectTitle}
+                        onUpdateProjectTaskColor={handleUpdateProjectDefaultTaskColor}
                         onAddTask={handleAddTask}
                         onUpdateTask={handleUpdateTask}
                         onDeleteTask={handleDeleteTask}

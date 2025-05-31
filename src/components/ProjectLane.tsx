@@ -379,7 +379,12 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
     };
 
     const projectLaneStyle = {
-        borderTop: `5px solid ${project.taskColor || '#ccc'}` // Use project.taskColor for top border
+        borderTop: `5px solid ${project.taskColor || '#ccc'}`, // Use project.taskColor for top border
+        backgroundColor: project.taskColor ? `${project.taskColor}10` : '#f9f9f9' // Very light version of the project color
+    };
+
+    const taskListStyle = {
+        backgroundColor: project.taskColor ? `${project.taskColor}08` : 'transparent' // Even lighter background for task list
     };
 
     const MAX_VISIBLE_AVATARS = 3;
@@ -425,7 +430,7 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
     );
 
     return (
-        <div className={styles.projectLaneContainer}>
+        <div className={styles.projectLaneContainer} style={projectLaneStyle}>
             <div className={styles.projectHeader}>
                 <div className={styles.projectTitleContainer}>
                     {isEditingProjectTitle ? (
@@ -499,7 +504,7 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
                 </Tippy>
             </form>
 
-            <div className={styles.taskList}>
+            <div className={styles.taskList} style={taskListStyle}>
                 {project.tasks.map((task) => {
                     const assignedPeopleDetails = getAssignedPeopleDetails(task.id);
 
