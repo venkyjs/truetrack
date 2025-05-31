@@ -7,6 +7,7 @@ import ProjectLane from './components/ProjectLane';
 import styles from './App.module.css';
 import AppHeader from './components/AppHeader/AppHeader';
 import PreferencesDialog from './components/PreferencesDialog/PreferencesDialog';
+import './components/TooltipStyles.css'; // Import custom tooltip styles
 
 // Removed local type definitions, using global ones imported above
 
@@ -204,7 +205,6 @@ const App: FC = () => {
     const handleDeleteTask = (projectId: string, taskId: string) => {
         setProjects(
             projects.map((projectValue) => {
-                // Renamed project to projectValue to avoid conflict
                 if (projectValue.id === projectId) {
                     return {
                         ...projectValue,
