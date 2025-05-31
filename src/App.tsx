@@ -1,240 +1,246 @@
-import { useState, useEffect, useCallback } from 'react';
-import type { Project, Task, Person } from './types';
-import ProjectLane from './components/ProjectLane'; // Import ProjectLane
-import styles from './App.module.css'; // Using App.module.css for app-level styles
+import React, { useState, useEffect } from 'react';
+import type { FC } from 'react';
+// Import global types
+import type { Project, Task as ProjectTask, Person, TaskItem as ProjectTaskItem } from './types';
 
-function App() {
-    const [projectDataPath, setProjectDataPath] = useState<string | null>(null);
-    const [projects, setProjects] = useState<Project[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [people, setPeople] = useState<Person[]>([]);
-    const [isLoadingPeople, setIsLoadingPeople] = useState(true);
-    // Editing state is now managed within ProjectLane
+import ProjectLane from './components/ProjectLane';
+import styles from './App.module.css';
+import AppHeader from './components/AppHeader/AppHeader';
+import PreferencesDialog from './components/PreferencesDialog/PreferencesDialog';
 
-    useEffect(() => {
-        const cleanup = window?.electronAPI?.onSetProjectDataPath((path) => {
-            console.log('Received project data path:', path);
-            setProjectDataPath(path);
-        });
-        return cleanup;
-    }, []);
+// Removed local type definitions, using global ones imported above
 
-    const saveData = useCallback(
-        async (updatedProjects: Project[]) => {
-            if (projectDataPath) {
-                try {
-                    const result = await window?.electronAPI?.saveProjects(updatedProjects);
-                    if (!result.success) {
-                        console.error('Failed to save projects:', result.error);
-                        setError('Failed to save projects. Some changes might not persist.');
-                    }
-                } catch (err) {
-                    console.error('Error in saveProjects IPC call:', err);
-                    setError('Error communicating with main process to save projects.');
-                }
+const getRandomPastelColor = () => {
+    const hue = Math.floor(Math.random() * 360);
+    return `hsl(${hue}, 70%, 85%)`;
+};
+
+const initialGlobalPeople: Person[] = [
+    { id: 'person-1', name: 'Alice', initials: 'AL' }, // Added initials as per global type
+    { id: 'person-2', name: 'Bob', initials: 'BO' },
+    { id: 'person-3', name: 'Charlie', initials: 'CH' },
+    { id: 'person-4', name: 'Diana', initials: 'DI' },
+    { id: 'person-5', name: 'Edward', initials: 'ED' }
+];
+
+const initialProjectsData: Project[] = [
+    {
+        id: 'project-1',
+        title: 'Project Alpha',
+        taskColor: getRandomPastelColor(),
+        tasks: [
+            {
+                id: 'task-1-1',
+                title: 'Develop Feature X',
+                items: [
+                    { id: 'item-1-1-1', text: 'Design UI mockups', completed: true },
+                    { id: 'item-1-1-2', text: 'Implement frontend logic', completed: false },
+                    { id: 'item-1-1-3', text: 'Write unit tests', completed: false }
+                ],
+                assignedPersons: ['person-1'], // Array of Person IDs
+                reminder: undefined, // Matched to global type (optional Date | string)
+                color: undefined // Task specific color, optional in global type
+            },
+            {
+                id: 'task-1-2',
+                title: 'Setup CI/CD Pipeline',
+                items: [
+                    { id: 'item-1-2-1', text: 'Configure Jenkins', completed: true },
+                    { id: 'item-1-2-2', text: 'Define build stages', completed: true }
+                ],
+                assignedPersons: [],
+                reminder: new Date('2023-12-15T10:00').toISOString(), // Match global type
+                color: '#FFFACD'
             }
-        },
-        [projectDataPath]
-    );
-
-    const savePeopleData = useCallback(
-        async (updatedPeople: Person[]) => {
-            if (projectDataPath) {
-                try {
-                    const result = await window?.electronAPI?.savePeople(updatedPeople);
-                    if (!result.success) {
-                        console.error('Failed to save people:', result.error);
-                        // Optionally set an error state for people saving
-                    }
-                } catch (err) {
-                    console.error('Error in savePeople IPC call:', err);
-                }
+        ]
+    },
+    {
+        id: 'project-2',
+        title: 'Marketing Campaign',
+        taskColor: getRandomPastelColor(),
+        tasks: [
+            {
+                id: 'task-2-1',
+                title: 'Create Ad Copy',
+                items: [
+                    { id: 'item-2-1-1', text: 'Draft initial versions', completed: false },
+                    { id: 'item-2-1-2', text: 'Review with team', completed: false }
+                ],
+                assignedPersons: ['person-2'],
+                reminder: undefined,
+                color: '#E6E6FA'
             }
-        },
-        [projectDataPath]
-    );
+        ]
+    },
+    {
+        id: 'project-3',
+        title: 'Website Redesign',
+        taskColor: getRandomPastelColor(),
+        tasks: []
+    }
+];
 
-    useEffect(() => {
-        if (projectDataPath) {
-            setIsLoading(true);
-            setError(null);
-            window?.electronAPI
-                ?.loadProjects()
-                .then((loadedProjects) => {
-                    console.log('Loaded projects:', loadedProjects);
-                    setProjects(loadedProjects || []);
-                })
-                .catch((err) => {
-                    console.error('Error loading projects:', err);
-                    setError('Failed to load projects. Check console for details.');
-                    setProjects([]);
-                })
-                .finally(() => {
-                    setIsLoading(false);
-                });
+export const availablePeople: Person[] = [...initialGlobalPeople];
 
-            setIsLoadingPeople(true);
-            window?.electronAPI
-                ?.loadPeople()
-                .then((loadedPeople) => {
-                    console.log('Loaded people:', loadedPeople);
-                    setPeople(loadedPeople || []);
-                })
-                .catch((err) => {
-                    console.error('Failed to load people:', err);
-                    // Optionally set an error state for people loading
-                    setPeople([]);
-                })
-                .finally(() => {
-                    setIsLoadingPeople(false);
-                });
+const App: FC = () => {
+    const [projects, setProjects] = useState<Project[]>(() => {
+        const savedProjects = localStorage.getItem('projectsData');
+        try {
+            const parsedProjects = savedProjects ? JSON.parse(savedProjects) : initialProjectsData;
+            return parsedProjects.map((p: Project) => ({
+                ...p,
+                taskColor: p.taskColor || getRandomPastelColor(),
+                tasks: p.tasks.map((t) => ({
+                    ...t,
+                    reminder: t.reminder ? new Date(t.reminder).toISOString() : undefined
+                }))
+            }));
+        } catch (error) {
+            console.error('Failed to parse projectsData from localStorage', error);
+            return initialProjectsData.map((p) => ({
+                ...p,
+                taskColor: p.taskColor || getRandomPastelColor(),
+                tasks: p.tasks.map((t) => ({
+                    ...t,
+                    reminder: t.reminder ? new Date(t.reminder).toISOString() : undefined
+                }))
+            }));
         }
-    }, [projectDataPath]);
+    });
+
+    const [nextProjectId, setNextProjectId] = useState<number>(() => {
+        if (projects.length === 0) return 1;
+        const ids = projects.map((p) => parseInt(p.id.split('-')[1] || '0', 10));
+        const numericIds = ids.filter((id) => !isNaN(id));
+        if (numericIds.length === 0) return 1;
+        const maxId = Math.max(...numericIds);
+        return maxId < 0 ? 1 : maxId + 1;
+    });
+
+    const [isPreferencesOpen, setIsPreferencesOpen] = useState<boolean>(false);
+    const [appWallpaper, setAppWallpaper] = useState<string | null>(() => {
+        return localStorage.getItem('appWallpaper') || null;
+    });
+
+    useEffect(() => {
+        localStorage.setItem('projectsData', JSON.stringify(projects));
+    }, [projects]);
+
+    useEffect(() => {
+        if (appWallpaper) {
+            localStorage.setItem('appWallpaper', appWallpaper);
+            document.body.style.backgroundImage = `url(${appWallpaper})`;
+            document.body.style.backgroundSize = 'cover';
+            document.body.style.backgroundPosition = 'center';
+            document.body.style.backgroundRepeat = 'no-repeat';
+        } else {
+            localStorage.removeItem('appWallpaper');
+            document.body.style.backgroundImage = '';
+        }
+    }, [appWallpaper]);
 
     const handleAddProject = () => {
         const newProject: Project = {
-            id: crypto.randomUUID(),
-            title: `New Project ${projects.length + 1}`,
+            id: `project-${nextProjectId}`,
+            title: `Project ${nextProjectId}`,
             tasks: [],
             taskColor: getRandomPastelColor()
         };
-        const updatedProjects = [...projects, newProject];
-        setProjects(updatedProjects);
-        saveData(updatedProjects);
+        setProjects([...projects, newProject]);
+        setNextProjectId((prevId) => prevId + 1);
     };
 
     const handleDeleteProject = (projectId: string) => {
-        const updatedProjects = projects.filter((p) => p.id !== projectId);
-        setProjects(updatedProjects);
-        saveData(updatedProjects);
+        setProjects(projects.filter((p) => p.id !== projectId));
     };
 
     const handleUpdateProjectTitle = (projectId: string, newTitle: string) => {
-        const updatedProjects = projects.map((p) =>
-            p.id === projectId ? { ...p, title: newTitle } : p
-        );
-        setProjects(updatedProjects);
-        saveData(updatedProjects);
+        setProjects(projects.map((p) => (p.id === projectId ? { ...p, title: newTitle } : p)));
     };
 
-    const getRandomPastelColor = () => {
-        const hue = Math.floor(Math.random() * 360);
-        return `hsl(${hue}, 70%, 80%)`;
-    };
-
-    // Task Management Functions
-    const handleAddTask = (projectId: string, taskTitle: string) => {
-        const newTask: Task = {
-            id: crypto.randomUUID(),
-            title: taskTitle,
-            items: [],
-            assignedPersons: []
-            // reminder: undefined, // No reminder by default
-            // color: undefined, // Inherits project color by default
-        };
-        const updatedProjects = projects.map((p) =>
-            p.id === projectId ? { ...p, tasks: [...p.tasks, newTask] } : p
+    const handleUpdateProjectDefaultTaskColor = (projectId: string, newTaskColor: string) => {
+        setProjects(
+            projects.map((p) => (p.id === projectId ? { ...p, taskColor: newTaskColor } : p))
         );
-        setProjects(updatedProjects);
-        saveData(updatedProjects);
     };
 
     const handleUpdateTask = (
         projectId: string,
         taskId: string,
-        updatedTaskData: Partial<Omit<Task, 'id'>>
+        updatedTaskData: Partial<Omit<ProjectTask, 'id'>>
     ) => {
-        const updatedProjects = projects.map((p) => {
-            if (p.id === projectId) {
-                return {
-                    ...p,
-                    tasks: p.tasks.map((t) => (t.id === taskId ? { ...t, ...updatedTaskData } : t))
-                };
-            }
-            return p;
-        });
-        setProjects(updatedProjects);
-        saveData(updatedProjects);
+        setProjects(
+            projects.map((p) => {
+                if (p.id === projectId) {
+                    return {
+                        ...p,
+                        tasks: p.tasks.map((t) =>
+                            t.id === taskId ? { ...t, ...updatedTaskData } : t
+                        )
+                    };
+                }
+                return p;
+            })
+        );
+    };
+
+    const handleAddTask = (projectId: string, taskTitle: string) => {
+        const project = projects.find((p) => p.id === projectId);
+        if (!project) return;
+
+        const newTask: ProjectTask = {
+            id: `task-${projectId}-${Date.now()}`,
+            title: taskTitle,
+            items: [],
+            assignedPersons: [],
+            reminder: undefined,
+            color: undefined
+        };
+        setProjects(
+            projects.map((p) => (p.id === projectId ? { ...p, tasks: [...p.tasks, newTask] } : p))
+        );
     };
 
     const handleDeleteTask = (projectId: string, taskId: string) => {
-        const updatedProjects = projects.map((p) => {
-            if (p.id === projectId) {
-                return { ...p, tasks: p.tasks.filter((t) => t.id !== taskId) };
-            }
-            return p;
-        });
-        setProjects(updatedProjects);
-        saveData(updatedProjects);
-    };
-
-    // Person Management
-    const getPersonInitials = (name: string): string => {
-        const parts = name.split(' ').filter(Boolean);
-        if (parts.length === 0) return '?';
-        if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
-        return (parts[0][0] + (parts[parts.length - 1][0] || '')).toUpperCase();
-    };
-
-    // This function will be called from the Person Tagging UI
-    // It ensures a person exists and returns their ID, creating them if new.
-    const findOrCreatePerson = (name: string): string => {
-        const existingPerson = people.find((p) => p.name.toLowerCase() === name.toLowerCase());
-        if (existingPerson) {
-            return existingPerson.id;
-        }
-        const newPerson: Person = {
-            id: crypto.randomUUID(),
-            name: name,
-            initials: getPersonInitials(name)
-        };
-        const updatedPeople = [...people, newPerson];
-        setPeople(updatedPeople);
-        savePeopleData(updatedPeople);
-        return newPerson.id;
-    };
-
-    if (!projectDataPath && (isLoading || isLoadingPeople)) {
-        return <div className={styles.centeredMessage}>Waiting for project data path...</div>;
-    }
-    if (!projectDataPath && !isLoading && !isLoadingPeople) {
-        return (
-            <div className={styles.centeredMessage}>Project data path not set. Please restart.</div>
+        setProjects(
+            projects.map((project) => {
+                if (project.id === projectId) {
+                    return {
+                        ...project,
+                        tasks: project.tasks.filter((task) => task.id !== taskId)
+                    };
+                }
+                return project;
+            })
         );
-    }
-    if ((isLoading || isLoadingPeople) && projectDataPath) {
-        return <div className={styles.centeredMessage}>Loading data from {projectDataPath}...</div>;
-    }
-    if (error) {
-        return (
-            <div className={`${styles.centeredMessage} ${styles.errorText}`}>Error: {error}</div>
-        );
-    }
+    };
+
+    const handleWallpaperChange = (wallpaper: string | null) => {
+        setAppWallpaper(wallpaper);
+    };
 
     return (
-        <div className={styles.appContainer}>
-            <header className={styles.appHeader}>
-                <h1>TrueTrack!</h1>
-                <button onClick={handleAddProject} className={styles.addProjectBtn}>
-                    Add New Project
-                </button>
-                {/* projectDataPath && (
-                    <p className={styles.dataPathDisplay}>Data Path: {projectDataPath}</p>
-                ) */}
-            </header>
-            <main className={styles.projectsGrid}>
-                {projects.length === 0 && !isLoading && (
-                    <p className={styles.centeredMessage}>
-                        No projects found. Click "Add New Project" to get started!
-                    </p>
-                )}
+        <div className={styles.app}>
+            <AppHeader onOpenPreferences={() => setIsPreferencesOpen(true)} />
+            <main className={styles.mainContent}>
                 {projects.map((project) => (
                     <ProjectLane
                         key={project.id}
                         project={project}
-                        people={people}
-                        findOrCreatePerson={findOrCreatePerson}
+                        people={availablePeople}
+                        findOrCreatePerson={(name: string) => {
+                            const existing = availablePeople.find(
+                                (p) => p.name.toLowerCase() === name.toLowerCase()
+                            );
+                            if (existing) return existing.id;
+                            const newPerson: Person = {
+                                id: crypto.randomUUID(),
+                                name,
+                                initials: name.substring(0, 2).toUpperCase()
+                            };
+                            availablePeople.push(newPerson);
+                            return newPerson.id;
+                        }}
                         onDeleteProject={handleDeleteProject}
                         onUpdateProjectTitle={handleUpdateProjectTitle}
                         onAddTask={handleAddTask}
@@ -242,9 +248,17 @@ function App() {
                         onDeleteTask={handleDeleteTask}
                     />
                 ))}
+                <button onClick={handleAddProject} className={styles.addProjectBtn}>
+                    + Add New Project
+                </button>
             </main>
+            <PreferencesDialog
+                isOpen={isPreferencesOpen}
+                onClose={() => setIsPreferencesOpen(false)}
+                onWallpaperChange={handleWallpaperChange}
+            />
         </div>
     );
-}
+};
 
 export default App;

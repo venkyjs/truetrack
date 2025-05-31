@@ -366,7 +366,7 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
     );
 
     return (
-        <div className={styles.projectLaneContainer} style={{ borderColor: project.taskColor }}>
+        <div className={styles.projectLaneContainer}>
             <div className={styles.projectHeader}>
                 {isEditingProjectTitle ? (
                     <input

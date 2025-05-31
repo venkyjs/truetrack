@@ -1,8 +1,8 @@
 .projectLaneContainer {
     width: 300px;
-    background-color: #ffffff;
-    border: 3px solid #ccc; /* Default border, color overridden by style prop */
-    border-radius: 8px;
+    background-color: rgba(0, 0, 0, 0.6);
+    border-right: 3px solid rgba(255, 255, 255, 0.6); /* Default border, color overridden by style prop */
+
     padding: 15px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     display: flex;

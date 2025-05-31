@@ -1,0 +1,37 @@
+/* AppHeader.module.css */
+.appHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: #007bff; /* Example header color */
+    color: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.title {
+    font-size: 1.5em;
+    font-weight: bold;
+}
+
+.headerControls {
+    display: flex;
+    align-items: center;
+}
+
+.settingsButton {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5em; /* Adjust size of the icon */
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.settingsButton:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
