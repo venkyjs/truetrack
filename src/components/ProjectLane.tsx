@@ -90,7 +90,12 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
 
     const [editingReminderTaskId, setEditingReminderTaskId] = useState<string | null>(null);
 
+    const [showColorPicker, setShowColorPicker] = useState(false);
+
     const datepickerRefs = useRef<{ [taskId: string]: AirDatepicker<HTMLElement> | null }>({});
+
+    const colorPickerRef = useRef<HTMLDivElement>(null);
+    const colorInputRef = useRef<HTMLInputElement>(null);
 
     // Helper to get person object by ID
     const getPersonById = (id: string): Person | undefined => people.find((p) => p.id === id);
@@ -362,6 +367,7 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
             alpha: false,
             onChange: (color: string) => {
                 handleSetProjectTaskColor(color);
+                setShowColorPicker(false);
             }
         });
 
@@ -373,6 +379,33 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
             // manage the input field directly or check Coloris documentation for cleanup.
         };
     }, [project.id, handleSetProjectTaskColor]); // project.id ensures re-init if project changes, though unlikely needed for this picker
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (colorPickerRef.current && !colorPickerRef.current.contains(event.target as Node)) {
+                setShowColorPicker(false);
+            }
+        };
+
+        if (showColorPicker) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [showColorPicker]);
+
+    useEffect(() => {
+        if (showColorPicker && colorInputRef.current) {
+            // Small delay to ensure the input is rendered and Coloris is initialized
+            setTimeout(() => {
+                if (colorInputRef.current) {
+                    colorInputRef.current.click();
+                }
+            }, 50);
+        }
+    }, [showColorPicker]);
 
     const toggleShowCompleted = (taskId: string) => {
         setShowCompleted((prev) => ({ ...prev, [taskId]: !prev[taskId] }));
@@ -468,16 +501,25 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
                                 </button>
                             </Tippy>
                             <Tippy content='Change Project Color' placement='top' theme='material'>
-                                {/* <input
-                                    type='text'
-                                    className={styles.projectColorPickerInput}
-                                    data-coloris
-                                    value={project.taskColor || ''}
-                                    readOnly // Make it readOnly if you don't want users to type hex codes directly
-                                /> */}
-                                <button onClick={() => {}} className={styles.editProjectBtn}>
-                                    <FontAwesomeIcon icon={faPalette} />
-                                </button>
+                                <div className={styles.colorPickerContainer} ref={colorPickerRef}>
+                                    <button
+                                        onClick={() => setShowColorPicker(!showColorPicker)}
+                                        className={styles.editProjectBtn}
+                                    >
+                                        <FontAwesomeIcon icon={faPalette} />
+                                    </button>
+                                    {showColorPicker && (
+                                        <input
+                                            ref={colorInputRef}
+                                            type='text'
+                                            className={styles.projectColorPickerInput}
+                                            data-coloris
+                                            value={project.taskColor || ''}
+                                            readOnly
+                                            id={`colorPicker-${project.id}`}
+                                        />
+                                    )}
+                                </div>
                             </Tippy>
                             <Tippy content='Delete Project' placement='top' theme='material'>
                                 <button
