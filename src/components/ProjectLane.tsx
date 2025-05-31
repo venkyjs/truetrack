@@ -620,53 +620,145 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
 
                             {/* Person Tagging UI */}
                             <div className={styles.taskFooter}>
-                                <div className={styles.assignedPeopleContainer}>
-                                    {assignedPeopleDetails
-                                        .slice(0, MAX_VISIBLE_AVATARS)
-                                        .map((person) => (
+                                <div className={styles.mainActionsRow}>
+                                    <div className={styles.avatarsDisplayContainer}>
+                                        {assignedPeopleDetails
+                                            .slice(0, MAX_VISIBLE_AVATARS)
+                                            .map((person) => (
+                                                <Tippy
+                                                    content={`Assigned to ${person.name}. Click to remove.`}
+                                                    key={person.id}
+                                                    placement='top'
+                                                    theme='material'
+                                                >
+                                                    <div
+                                                        className={styles.personAvatar}
+                                                        onClick={() =>
+                                                            handleRemovePersonFromTask(
+                                                                task.id,
+                                                                person.id
+                                                            )
+                                                        }
+                                                    >
+                                                        {person.initials}
+                                                    </div>
+                                                </Tippy>
+                                            ))}
+                                        {assignedPeopleDetails.length > MAX_VISIBLE_AVATARS && (
                                             <Tippy
-                                                content={`Assigned to ${person.name}. Click to remove.`}
-                                                key={person.id}
+                                                content={`+${
+                                                    assignedPeopleDetails.length -
+                                                    MAX_VISIBLE_AVATARS
+                                                } more`}
                                                 placement='top'
                                                 theme='material'
                                             >
                                                 <div
-                                                    className={styles.personAvatar}
-                                                    onClick={() =>
-                                                        handleRemovePersonFromTask(
-                                                            task.id,
-                                                            person.id
-                                                        )
-                                                    }
+                                                    className={`${styles.personAvatar} ${styles.overflowAvatar}`}
                                                 >
-                                                    {person.initials}
+                                                    +
+                                                    {assignedPeopleDetails.length -
+                                                        MAX_VISIBLE_AVATARS}
                                                 </div>
                                             </Tippy>
-                                        ))}
-                                    {assignedPeopleDetails.length > MAX_VISIBLE_AVATARS && (
+                                        )}
+                                    </div>
+
+                                    <div className={styles.actionButtonsGroup}>
                                         <Tippy
-                                            content={`+${
-                                                assignedPeopleDetails.length - MAX_VISIBLE_AVATARS
-                                            } more`}
+                                            content='Assign Person'
                                             placement='top'
                                             theme='material'
                                         >
-                                            <div
-                                                className={`${styles.personAvatar} ${styles.overflowAvatar}`}
+                                            <button
+                                                onClick={() => handleOpenPersonTagging(task.id)}
+                                                className={styles.addPersonBtn}
                                             >
-                                                +
-                                                {assignedPeopleDetails.length - MAX_VISIBLE_AVATARS}
-                                            </div>
+                                                <FontAwesomeIcon icon={faTag} />
+                                            </button>
                                         </Tippy>
-                                    )}
-                                    <Tippy content='Assign Person' placement='top' theme='material'>
-                                        <button
-                                            onClick={() => handleOpenPersonTagging(task.id)}
-                                            className={styles.addPersonBtn}
-                                        >
-                                            <FontAwesomeIcon icon={faTag} />
-                                        </button>
-                                    </Tippy>
+
+                                        {/* Reminder Button/Input grouped into a new div */}
+                                        <div className={styles.reminderSection}>
+                                            {editingReminderTaskId === task.id ? (
+                                                <div className={styles.reminderEditingContainer}>
+                                                    <input
+                                                        type='datetime-local'
+                                                        value={currentReminder}
+                                                        onChange={handleReminderChange}
+                                                        className={styles.reminderInput}
+                                                    />
+                                                    <Tippy
+                                                        content='Save Reminder'
+                                                        placement='top'
+                                                        theme='material'
+                                                    >
+                                                        <button
+                                                            onClick={() =>
+                                                                handleReminderSave(task.id)
+                                                            }
+                                                            className={styles.reminderActionBtn}
+                                                        >
+                                                            <FontAwesomeIcon icon={faCheck} />
+                                                        </button>
+                                                    </Tippy>
+                                                    <Tippy
+                                                        content='Cancel'
+                                                        placement='top'
+                                                        theme='material'
+                                                    >
+                                                        <button
+                                                            onClick={() =>
+                                                                setEditingReminderTaskId(null)
+                                                            }
+                                                            className={styles.reminderActionBtn}
+                                                        >
+                                                            <FontAwesomeIcon icon={faUndo} />
+                                                        </button>
+                                                    </Tippy>
+                                                </div>
+                                            ) : (
+                                                <Tippy
+                                                    content={
+                                                        task.reminder
+                                                            ? `Reminder: ${new Date(
+                                                                  task.reminder
+                                                              ).toLocaleString()}`
+                                                            : 'Set Reminder'
+                                                    }
+                                                    placement='top'
+                                                    theme='material'
+                                                >
+                                                    <button
+                                                        onClick={() =>
+                                                            handleReminderIconClick(task)
+                                                        }
+                                                        className={styles.reminderIconBtn}
+                                                    >
+                                                        <FontAwesomeIcon
+                                                            icon={
+                                                                task.reminder ? faBell : faBellSlash
+                                                            }
+                                                        />
+                                                    </button>
+                                                </Tippy>
+                                            )}
+                                            {task.reminder && editingReminderTaskId !== task.id && (
+                                                <Tippy
+                                                    content='Clear Reminder'
+                                                    placement='top'
+                                                    theme='material'
+                                                >
+                                                    <button
+                                                        onClick={() => handleClearReminder(task.id)}
+                                                        className={styles.clearReminderBtn}
+                                                    >
+                                                        <FontAwesomeIcon icon={faTimes} size='sm' />
+                                                    </button>
+                                                </Tippy>
+                                            )}
+                                        </div>
+                                    </div>
                                 </div>
 
                                 {taggingPersonTaskId === task.id && (
@@ -727,79 +819,6 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
                                         </div>
                                     </div>
                                 )}
-
-                                {/* Reminder Input */}
-                                <div className={styles.reminderContainer}>
-                                    {editingReminderTaskId === task.id ? (
-                                        <>
-                                            <input
-                                                type='datetime-local'
-                                                value={currentReminder}
-                                                onChange={handleReminderChange}
-                                                className={styles.reminderInput}
-                                            />
-                                            <Tippy
-                                                content='Save Reminder'
-                                                placement='top'
-                                                theme='material'
-                                            >
-                                                <button
-                                                    onClick={() => handleReminderSave(task.id)}
-                                                    className={styles.reminderActionBtn}
-                                                >
-                                                    <FontAwesomeIcon icon={faCheck} />
-                                                </button>
-                                            </Tippy>
-                                            <Tippy
-                                                content='Cancel'
-                                                placement='top'
-                                                theme='material'
-                                            >
-                                                <button
-                                                    onClick={() => setEditingReminderTaskId(null)}
-                                                    className={styles.reminderActionBtn}
-                                                >
-                                                    <FontAwesomeIcon icon={faUndo} />
-                                                </button>
-                                            </Tippy>
-                                        </>
-                                    ) : (
-                                        <Tippy
-                                            content={
-                                                task.reminder
-                                                    ? `Reminder: ${new Date(
-                                                          task.reminder
-                                                      ).toLocaleString()}`
-                                                    : 'Set Reminder'
-                                            }
-                                            placement='top'
-                                            theme='material'
-                                        >
-                                            <button
-                                                onClick={() => handleReminderIconClick(task)}
-                                                className={styles.reminderIconBtn}
-                                            >
-                                                <FontAwesomeIcon
-                                                    icon={task.reminder ? faBell : faBellSlash}
-                                                />
-                                            </button>
-                                        </Tippy>
-                                    )}
-                                    {task.reminder && editingReminderTaskId !== task.id && (
-                                        <Tippy
-                                            content='Clear Reminder'
-                                            placement='top'
-                                            theme='material'
-                                        >
-                                            <button
-                                                onClick={() => handleClearReminder(task.id)}
-                                                className={styles.clearReminderBtn}
-                                            >
-                                                <FontAwesomeIcon icon={faTimes} size='sm' />
-                                            </button>
-                                        </Tippy>
-                                    )}
-                                </div>
                             </div>
                         </div>
                     );

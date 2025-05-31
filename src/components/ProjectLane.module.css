@@ -352,7 +352,9 @@
     border-radius: 14px; /* Pill shape */
     cursor: pointer;
     font-size: 0.85em;
-    margin-left: auto; /* Pushes button to the right if space allows */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .addPersonBtn:hover {
@@ -420,6 +422,27 @@
 }
 .cancelAddPersonBtn:hover {
     background-color: #e8e8e8;
+}
+
+.reminderIconBtn {
+    background-color: transparent;
+    border: 1px dashed #ccc;
+    color: #555;
+    padding: 4px 8px;
+    border-radius: 14px; /* Pill shape */
+    cursor: pointer;
+    font-size: 0.85em;
+}
+
+.reminderIconBtn:hover {
+    background-color: #f0f0f0;
+    border-color: #bbb;
+}
+
+.reminderSection {
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
 .reminderContainer {
@@ -558,4 +581,33 @@
 
 .cancelColorOption:hover {
     background-color: #e0e0e0;
+}
+
+.mainActionsRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.avatarsDisplayContainer {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.actionButtonsGroup {
+    display: flex;
+    align-items: center;
+    /* gap: 6px; */ /* Ensure this is commented or removed */
+    justify-content: space-between; /* Add this */
+    flex-grow: 1; /* Add this */
+    /* margin-left: auto; If this was here from a previous step, ensure it's removed or not needed */
+}
+
+.reminderEditingContainer {
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
