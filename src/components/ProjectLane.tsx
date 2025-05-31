@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import type { Project, Task, TaskItem, Person } from '../types'; // Assuming types.ts is in the same src folder
 import styles from './ProjectLane.module.css'; // Use CSS module import
+import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
     faEdit,
@@ -375,7 +376,7 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
                     onBlur={handleItemTextSave}
                     onKeyDown={handleItemTextKeyDown}
                     autoFocus
-                    className={styles.taskItemTextInput}
+                    className={classNames(styles.stickyInput)}
                 />
             ) : (
                 <span
@@ -407,7 +408,7 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
                             onChange={handleProjectTitleChange}
                             onBlur={handleProjectTitleSave}
                             onKeyDown={handleProjectTitleKeyDown}
-                            className={styles.projectTitleInput}
+                            className={classNames(styles.stickyInput)}
                             autoFocus
                         />
                     ) : (
@@ -449,7 +450,7 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
                     value={newTaskTitle}
                     onChange={handleNewTaskChange}
                     placeholder='Add new task...'
-                    className={styles.newTaskInput}
+                    className={styles.stickyInput}
                 />
                 <Tippy content='Add Task' placement='top' theme='material'>
                     <button type='submit' className={styles.addTaskBtn}>
@@ -557,10 +558,14 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
                                     onKeyDown={(e) =>
                                         e.key === 'Enter' && handleAddNewItem(e, task.id)
                                     }
-                                    className={styles.addItemInput}
+                                    className={styles.stickyInput}
                                 />
                                 <Tippy content='Add Item' placement='right' theme='material'>
-                                    <button type='submit' className={styles.addItemBtn}>
+                                    <button
+                                        type='submit'
+                                        className={styles.addItemBtn}
+                                        onClick={(e) => handleAddNewItem(e, task.id)}
+                                    >
                                         <FontAwesomeIcon icon={faPlus} />
                                     </button>
                                 </Tippy>
