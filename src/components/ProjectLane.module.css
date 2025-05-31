@@ -16,7 +16,7 @@
     align-items: center;
     margin-bottom: 10px;
     border-bottom: 1px solid #eee;
-    padding-bottom: 10px;
+    padding-bottom: 0;
     background-color: rgba(0, 0, 0, 0.9);
 }
 
@@ -68,6 +68,12 @@
 
 .stickyInput::placeholder {
     color: rgba(255, 255, 255, 0.6);
+}
+
+.projectTitleInput {
+    font-size: 1.2em;
+    font-weight: bold;
+    padding: 5px 0;
 }
 
 .deleteProjectBtn {

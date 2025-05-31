@@ -19,6 +19,7 @@ import {
 import Tippy from '@tippyjs/react';
 import AirDatepicker from 'air-datepicker';
 import 'air-datepicker/air-datepicker.css';
+import en from 'air-datepicker/locale/en'; // Import English locale
 import { format } from 'date-fns'; // For formatting the date
 // Ensure TooltipStyles.css is imported in a global scope, like App.tsx or main.tsx
 // No need to import 'tippy.js/dist/tippy.css' here if globally imported elsewhere and theme is custom.
@@ -418,7 +419,7 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
                             onChange={handleProjectTitleChange}
                             onBlur={handleProjectTitleSave}
                             onKeyDown={handleProjectTitleKeyDown}
-                            className={classNames(styles.stickyInput)}
+                            className={classNames(styles.stickyInput, styles.projectTitleInput)}
                             autoFocus
                         />
                     ) : (
@@ -435,33 +436,37 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
                             </h2>
                         </Tippy>
                     )}
-                    <Tippy content='Edit Project Title' placement='top' theme='material'>
-                        <button
-                            onClick={handleProjectTitleEditClick}
-                            className={styles.editProjectBtn}
-                        >
-                            <FontAwesomeIcon icon={faEdit} />
-                        </button>
-                    </Tippy>
-                    <Tippy content='Change Project Color' placement='top' theme='material'>
-                        <button
-                            onClick={toggleProjectColorPicker}
-                            className={styles.projectColorPickerButton}
-                        >
-                            <FontAwesomeIcon
-                                icon={faPalette}
-                                style={{ color: project.taskColor ? '#fff' : '#333' }}
-                            />
-                        </button>
-                    </Tippy>
-                    <Tippy content='Delete Project' placement='top' theme='material'>
-                        <button
-                            onClick={() => onDeleteProject(project.id)}
-                            className={styles.deleteProjectBtn}
-                        >
-                            <FontAwesomeIcon icon={faTrashAlt} />
-                        </button>
-                    </Tippy>
+                    {!isEditingProjectTitle && (
+                        <>
+                            <Tippy content='Edit Project Title' placement='top' theme='material'>
+                                <button
+                                    onClick={handleProjectTitleEditClick}
+                                    className={styles.editProjectBtn}
+                                >
+                                    <FontAwesomeIcon icon={faEdit} />
+                                </button>
+                            </Tippy>
+                            <Tippy content='Change Project Color' placement='top' theme='material'>
+                                <button
+                                    onClick={toggleProjectColorPicker}
+                                    className={styles.projectColorPickerButton}
+                                >
+                                    <FontAwesomeIcon
+                                        icon={faPalette}
+                                        style={{ color: project.taskColor ? '#fff' : '#333' }}
+                                    />
+                                </button>
+                            </Tippy>
+                            <Tippy content='Delete Project' placement='top' theme='material'>
+                                <button
+                                    onClick={() => onDeleteProject(project.id)}
+                                    className={styles.deleteProjectBtn}
+                                >
+                                    <FontAwesomeIcon icon={faTrashAlt} />
+                                </button>
+                            </Tippy>
+                        </>
+                    )}
                 </div>
             </div>
 
@@ -704,6 +709,9 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
                                                                             ? [currentReminderDate]
                                                                             : [],
                                                                     inline: false,
+                                                                    timeFormat: 'hh:mm aa',
+                                                                    locale: en,
+                                                                    minDate: new Date(),
                                                                     buttons: [
                                                                         {
                                                                             content: 'Apply',
@@ -781,7 +789,7 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
                                                                 />
                                                                 {format(
                                                                     new Date(task.reminder),
-                                                                    'MM/dd HH:mm'
+                                                                    'MM/dd hh:mm aa'
                                                                 )}
                                                             </span>
                                                         </Tippy>
