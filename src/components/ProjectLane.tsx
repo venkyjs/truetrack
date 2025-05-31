@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import type { Project, Task, TaskItem, Person } from '../types'; // Assuming types.ts is in the same src folder
 import styles from './ProjectLane.module.css'; // Use CSS module import
 import classNames from 'classnames';
@@ -17,6 +17,9 @@ import {
     faUndo
 } from '@fortawesome/free-solid-svg-icons';
 import Tippy from '@tippyjs/react';
+import AirDatepicker from 'air-datepicker';
+import 'air-datepicker/air-datepicker.css';
+import { format } from 'date-fns'; // For formatting the date
 // Ensure TooltipStyles.css is imported in a global scope, like App.tsx or main.tsx
 // No need to import 'tippy.js/dist/tippy.css' here if globally imported elsewhere and theme is custom.
 
@@ -85,7 +88,8 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
     const [showCompleted, setShowCompleted] = useState<{ [taskId: string]: boolean }>({});
 
     const [editingReminderTaskId, setEditingReminderTaskId] = useState<string | null>(null);
-    const [currentReminder, setCurrentReminder] = useState<string>('');
+
+    const datepickerRefs = useRef<{ [taskId: string]: AirDatepicker<HTMLElement> | null }>({});
 
     // Helper to get person object by ID
     const getPersonById = (id: string): Person | undefined => people.find((p) => p.id === id);
@@ -318,21 +322,25 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
     }, [project.tasks, people]);
 
     const handleReminderIconClick = (task: Task) => {
-        setEditingReminderTaskId(task.id);
-        setCurrentReminder(
-            task.reminder ? new Date(task.reminder).toISOString().substring(0, 16) : ''
-        );
+        if (editingReminderTaskId === task.id) {
+            // If already editing, clicking again could close it or do nothing.
+            // For now, let's make it close.
+            datepickerRefs.current[task.id]?.hide();
+            setEditingReminderTaskId(null);
+        } else {
+            setEditingReminderTaskId(task.id);
+            // Datepicker instance will be created and shown via useEffect or directly in JSX
+            // We need to ensure it shows after being set up, if not inline
+            setTimeout(() => datepickerRefs.current[task.id]?.show(), 0);
+        }
     };
 
-    const handleReminderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setCurrentReminder(e.target.value);
-    };
-
-    const handleReminderSave = (taskId: string) => {
+    const handleDateSelect = (taskId: string, date?: Date | Date[] | undefined) => {
+        const selectedDate = Array.isArray(date) ? date[0] : date;
         onUpdateTask(project.id, taskId, {
-            reminder: currentReminder ? new Date(currentReminder).toISOString() : undefined
+            reminder: selectedDate ? selectedDate.toISOString() : undefined
         });
-        setEditingReminderTaskId(null);
+        setEditingReminderTaskId(null); // Close picker after selection
     };
 
     const handleClearReminder = (taskId: string) => {
@@ -510,9 +518,6 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
             <div className={styles.taskList}>
                 {project.tasks.map((task) => {
                     const assignedPeopleDetails = getAssignedPeopleDetails(task.id);
-                    const reminderValueForInput = task.reminder
-                        ? new Date(task.reminder).toISOString().substring(0, 16)
-                        : '';
 
                     return (
                         <div
@@ -680,83 +685,143 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
 
                                         {/* Reminder Button/Input grouped into a new div */}
                                         <div className={styles.reminderSection}>
-                                            {editingReminderTaskId === task.id ? (
-                                                <div className={styles.reminderEditingContainer}>
-                                                    <input
-                                                        type='datetime-local'
-                                                        value={currentReminder}
-                                                        onChange={handleReminderChange}
-                                                        className={styles.reminderInput}
-                                                    />
-                                                    <Tippy
-                                                        content='Save Reminder'
-                                                        placement='top'
-                                                        theme='material'
-                                                    >
-                                                        <button
-                                                            onClick={() =>
-                                                                handleReminderSave(task.id)
-                                                            }
-                                                            className={styles.reminderActionBtn}
-                                                        >
-                                                            <FontAwesomeIcon icon={faCheck} />
-                                                        </button>
-                                                    </Tippy>
-                                                    <Tippy
-                                                        content='Cancel'
-                                                        placement='top'
-                                                        theme='material'
-                                                    >
-                                                        <button
-                                                            onClick={() =>
-                                                                setEditingReminderTaskId(null)
-                                                            }
-                                                            className={styles.reminderActionBtn}
-                                                        >
-                                                            <FontAwesomeIcon icon={faUndo} />
-                                                        </button>
-                                                    </Tippy>
-                                                </div>
-                                            ) : (
-                                                <Tippy
-                                                    content={
-                                                        task.reminder
-                                                            ? `Reminder: ${new Date(
-                                                                  task.reminder
-                                                              ).toLocaleString()}`
-                                                            : 'Set Reminder'
-                                                    }
-                                                    placement='top'
-                                                    theme='material'
-                                                >
-                                                    <button
-                                                        onClick={() =>
-                                                            handleReminderIconClick(task)
+                                            {editingReminderTaskId === task.id && (
+                                                <div
+                                                    ref={(el) => {
+                                                        if (
+                                                            el &&
+                                                            !datepickerRefs.current[task.id]
+                                                        ) {
+                                                            const currentReminderDate =
+                                                                task.reminder
+                                                                    ? new Date(task.reminder)
+                                                                    : new Date();
+                                                            datepickerRefs.current[task.id] =
+                                                                new AirDatepicker(el, {
+                                                                    timepicker: true,
+                                                                    selectedDates:
+                                                                        currentReminderDate
+                                                                            ? [currentReminderDate]
+                                                                            : [],
+                                                                    inline: false,
+                                                                    buttons: [
+                                                                        {
+                                                                            content: 'Apply',
+                                                                            className:
+                                                                                'air-datepicker-button-apply',
+                                                                            onClick: (
+                                                                                dp: AirDatepicker<HTMLElement>
+                                                                            ) => {
+                                                                                const selectedDate =
+                                                                                    dp
+                                                                                        .selectedDates[0];
+                                                                                onUpdateTask(
+                                                                                    project.id,
+                                                                                    task.id,
+                                                                                    {
+                                                                                        reminder:
+                                                                                            selectedDate
+                                                                                                ? selectedDate.toISOString()
+                                                                                                : undefined
+                                                                                    }
+                                                                                );
+                                                                                dp.hide();
+                                                                                setEditingReminderTaskId(
+                                                                                    null
+                                                                                );
+                                                                            }
+                                                                        },
+                                                                        {
+                                                                            content: 'Close',
+                                                                            className:
+                                                                                'air-datepicker-button-close',
+                                                                            onClick: (
+                                                                                dp: AirDatepicker<HTMLElement>
+                                                                            ) => {
+                                                                                dp.hide();
+                                                                                setEditingReminderTaskId(
+                                                                                    null
+                                                                                );
+                                                                            }
+                                                                        }
+                                                                    ]
+                                                                });
+                                                        } else if (
+                                                            !el &&
+                                                            datepickerRefs.current[task.id]
+                                                        ) {
+                                                            datepickerRefs.current[
+                                                                task.id
+                                                            ]?.destroy();
+                                                            datepickerRefs.current[task.id] = null;
                                                         }
-                                                        className={styles.reminderIconBtn}
+                                                    }}
+                                                    className={styles.datepickerContainer}
+                                                />
+                                            )}
+
+                                            {!editingReminderTaskId ||
+                                            editingReminderTaskId !== task.id ? (
+                                                task.reminder ? (
+                                                    <>
+                                                        <Tippy
+                                                            content='Edit Reminder'
+                                                            placement='top'
+                                                            theme='material'
+                                                        >
+                                                            <span
+                                                                className={styles.reminderText}
+                                                                onClick={() =>
+                                                                    handleReminderIconClick(task)
+                                                                }
+                                                            >
+                                                                <FontAwesomeIcon
+                                                                    icon={faBell}
+                                                                    style={{ marginRight: '5px' }}
+                                                                />
+                                                                {format(
+                                                                    new Date(task.reminder),
+                                                                    'MM/dd HH:mm'
+                                                                )}
+                                                            </span>
+                                                        </Tippy>
+                                                        <Tippy
+                                                            content='Clear Reminder'
+                                                            placement='top'
+                                                            theme='material'
+                                                        >
+                                                            <button
+                                                                onClick={() =>
+                                                                    handleClearReminder(task.id)
+                                                                }
+                                                                className={
+                                                                    styles.clearReminderBtnInline
+                                                                }
+                                                            >
+                                                                <FontAwesomeIcon
+                                                                    icon={faTimes}
+                                                                    size='sm'
+                                                                />
+                                                            </button>
+                                                        </Tippy>
+                                                    </>
+                                                ) : (
+                                                    <Tippy
+                                                        content='Set Reminder'
+                                                        placement='top'
+                                                        theme='material'
                                                     >
-                                                        <FontAwesomeIcon
-                                                            icon={
-                                                                task.reminder ? faBell : faBellSlash
+                                                        <button
+                                                            onClick={() =>
+                                                                handleReminderIconClick(task)
                                                             }
-                                                        />
-                                                    </button>
-                                                </Tippy>
-                                            )}
-                                            {task.reminder && editingReminderTaskId !== task.id && (
-                                                <Tippy
-                                                    content='Clear Reminder'
-                                                    placement='top'
-                                                    theme='material'
-                                                >
-                                                    <button
-                                                        onClick={() => handleClearReminder(task.id)}
-                                                        className={styles.clearReminderBtn}
-                                                    >
-                                                        <FontAwesomeIcon icon={faTimes} size='sm' />
-                                                    </button>
-                                                </Tippy>
-                                            )}
+                                                            className={styles.reminderIconBtn}
+                                                        >
+                                                            <FontAwesomeIcon icon={faBellSlash} />
+                                                        </button>
+                                                    </Tippy>
+                                                )
+                                            ) : null}
                                         </div>
                                     </div>
                                 </div>
