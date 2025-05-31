@@ -17,6 +17,7 @@
         "@tippyjs/react": "^4.2.6",
         "air-datepicker": "^3.6.0",
         "classnames": "^2.5.1",
+        "@melloware/coloris": "^0.24.2",
         "date-fns": "^4.1.0",
         "fs-extra": "^11.3.0",
         "react": "^19.1.0",
