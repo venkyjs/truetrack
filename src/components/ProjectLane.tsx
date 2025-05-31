@@ -468,18 +468,21 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
                                 </button>
                             </Tippy>
                             <Tippy content='Change Project Color' placement='top' theme='material'>
-                                <input
+                                {/* <input
                                     type='text'
                                     className={styles.projectColorPickerInput}
                                     data-coloris
                                     value={project.taskColor || ''}
                                     readOnly // Make it readOnly if you don't want users to type hex codes directly
-                                />
+                                /> */}
+                                <button onClick={() => {}} className={styles.editProjectBtn}>
+                                    <FontAwesomeIcon icon={faPalette} />
+                                </button>
                             </Tippy>
                             <Tippy content='Delete Project' placement='top' theme='material'>
                                 <button
                                     onClick={() => onDeleteProject(project.id)}
-                                    className={styles.deleteProjectBtn}
+                                    className={styles.editProjectBtn}
                                 >
                                     <FontAwesomeIcon icon={faTrashAlt} />
                                 </button>
