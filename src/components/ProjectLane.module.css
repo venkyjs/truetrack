@@ -124,16 +124,28 @@
     color: #333;
     flex-grow: 1; /* Allow title to take space */
     cursor: pointer; /* Indicate it's interactive */
+    line-height: 1.4;
+    padding: 2px 0;
 }
 
 .taskTitleInput {
     font-size: 1em; /* Match task title font size */
-    padding: 4px;
-    border: 1px solid #ccc;
-    border-radius: 3px;
+    padding: 2px 0; /* Match taskTitle padding */
+    border: none;
+    border-bottom: 2px solid #ccc;
+    border-radius: 0;
+    background-color: transparent;
     flex-grow: 1;
     margin-right: 8px; /* Space before delete button */
     font-weight: bold; /* Match task title font weight */
+    line-height: 1.4;
+    outline: none;
+    font-family: inherit;
+    color: #333;
+}
+
+.taskTitleInput:focus {
+    border-bottom-color: #1890ff;
 }
 
 .deleteTaskBtn {
@@ -174,15 +186,26 @@
     font-size: 0.95em;
     padding: 2px 0; /* Align with input if needed */
     cursor: pointer; /* Indicate it's interactive */
+    line-height: 1.4;
+    min-height: 1.33em; /* Ensure consistent height */
 }
 
 .taskItemTextInput {
     flex-grow: 1;
     font-size: 0.95em;
-    padding: 1px 2px; /* Minimal padding to align with span */
-    border: 1px solid #999;
-    border-radius: 2px;
-    margin-right: 5px; /* Space before delete button */
+    padding: 2px 0; /* Match taskItemText exactly */
+    border: none;
+    border-bottom: 1px solid #999;
+    border-radius: 0;
+    background-color: transparent;
+    line-height: 1.4;
+    min-height: 1.33em; /* Match taskItemText */
+    outline: none;
+    font-family: inherit;
+}
+
+.taskItemTextInput:focus {
+    border-bottom-color: #1890ff;
 }
 
 .deleteItemBtn {

@@ -442,7 +442,7 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
                     onBlur={handleItemTextSave}
                     onKeyDown={handleItemTextKeyDown}
                     autoFocus
-                    className={classNames(styles.stickyInput)}
+                    className={styles.taskItemTextInput}
                 />
             ) : (
                 <span
