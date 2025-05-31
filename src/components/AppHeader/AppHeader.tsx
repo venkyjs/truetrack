@@ -15,7 +15,9 @@ interface AppHeaderProps {
 const AppHeader: FC<AppHeaderProps> = ({ onOpenPreferences, onAddProject }) => {
     return (
         <header className={styles.appHeader}>
-            <div className={styles.title}>TrueTrack!</div>
+            <div className={styles.logoContainer}>
+                <img src='/truetrack-logo.png' alt='TrueTrack!' className={styles.logo} />
+            </div>
             <div className={styles.headerControls}>
                 <Tippy content='Add New Project' placement='bottom' theme='material'>
                     <button
