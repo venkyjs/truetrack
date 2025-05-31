@@ -29,11 +29,14 @@
 
 .projectTitle {
     margin: 0;
-    padding: 0;
+    padding: 5px 0; /* Match projectTitleInput padding */
     font-size: 1.2em;
     color: #fff;
     flex-grow: 1;
     cursor: pointer;
+    line-height: 1.4;
+    font-weight: bold; /* Match projectTitleInput font-weight */
+    min-height: 1.6em; /* Ensure consistent height */
 }
 
 .editProjectBtn {
@@ -60,6 +63,7 @@
     margin-right: 10px;
     border: none;
     border-radius: 0px;
+    color: #fff;
 }
 
 .stickyInput:focus-visible {
@@ -71,9 +75,22 @@
 }
 
 .projectTitleInput {
-    font-size: 1.2em;
-    font-weight: bold;
-    padding: 5px 0;
+    font-size: 1.2em; /* Match projectTitle font-size */
+    font-weight: bold; /* Match projectTitle font-weight */
+    padding: 5px 0; /* Match projectTitle padding */
+    line-height: 1.4; /* Match projectTitle line-height */
+    min-height: 1.6em; /* Match projectTitle min-height */
+    outline: none;
+    font-family: inherit;
+    color: #fff; /* Match projectTitle color */
+    border: none;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.8);
+    background-color: transparent;
+    border-radius: 0;
+}
+
+.projectTitleInput:focus {
+    border-bottom-color: #1890ff;
 }
 
 .deleteProjectBtn {
@@ -141,7 +158,6 @@
     line-height: 1.4;
     outline: none;
     font-family: inherit;
-    color: #333;
 }
 
 .taskTitleInput:focus {
