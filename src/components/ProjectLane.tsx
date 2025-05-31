@@ -397,7 +397,7 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
     );
 
     return (
-        <div className={styles.projectLaneContainer} style={projectLaneStyle}>
+        <div className={styles.projectLaneContainer}>
             <div className={styles.projectHeader}>
                 <div className={styles.projectTitleContainer}>
                     {isEditingProjectTitle ? (
