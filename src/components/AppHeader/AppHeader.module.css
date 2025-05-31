@@ -17,21 +17,33 @@
 .headerControls {
     display: flex;
     align-items: center;
+    gap: 10px; /* Add gap between control buttons */
 }
 
-.settingsButton {
+/* General style for control buttons */
+.controlButton {
     background: none;
     border: none;
     color: white;
-    font-size: 1.5em; /* Adjust size of the icon */
+    font-size: 1.4em; /* Unified icon size */
     cursor: pointer;
-    padding: 5px;
+    padding: 8px; /* Increased padding for better click area */
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: background-color 0.2s ease-in-out;
 }
 
-.settingsButton:hover {
+.controlButton:hover {
     background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Specific styles if needed, though .controlButton might be sufficient */
+.addProjectButton {
+    /* Any specific styles for add project button */
+}
+
+.settingsButton {
+    /* Any specific styles for settings button */
 }

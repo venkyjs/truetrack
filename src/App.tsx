@@ -203,14 +203,15 @@ const App: FC = () => {
 
     const handleDeleteTask = (projectId: string, taskId: string) => {
         setProjects(
-            projects.map((project) => {
-                if (project.id === projectId) {
+            projects.map((projectValue) => {
+                // Renamed project to projectValue to avoid conflict
+                if (projectValue.id === projectId) {
                     return {
-                        ...project,
-                        tasks: project.tasks.filter((task) => task.id !== taskId)
+                        ...projectValue,
+                        tasks: projectValue.tasks.filter((task) => task.id !== taskId)
                     };
                 }
-                return project;
+                return projectValue;
             })
         );
     };
@@ -221,7 +222,10 @@ const App: FC = () => {
 
     return (
         <div className={styles.app}>
-            <AppHeader onOpenPreferences={() => setIsPreferencesOpen(true)} />
+            <AppHeader
+                onOpenPreferences={() => setIsPreferencesOpen(true)}
+                onAddProject={handleAddProject} // Pass handleAddProject
+            />
             <main className={styles.mainContent}>
                 {projects.map((project) => (
                     <ProjectLane
@@ -248,9 +252,6 @@ const App: FC = () => {
                         onDeleteTask={handleDeleteTask}
                     />
                 ))}
-                <button onClick={handleAddProject} className={styles.addProjectBtn}>
-                    + Add New Project
-                </button>
             </main>
             <PreferencesDialog
                 isOpen={isPreferencesOpen}
