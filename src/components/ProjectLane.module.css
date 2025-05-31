@@ -93,7 +93,7 @@
 }
 
 .taskCard {
-    background-color: #fffacd; /* Lemon Chiffon - a common sticky note color */
+    background-color: #ffffff; /* Default background, will be overridden by JS style */
     padding: 10px;
 
     /* box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); */
@@ -292,8 +292,8 @@
     background-color: #52c41a; /* Green for add */
     color: white;
     border: none;
-    padding: 8px 15px;
-    border-radius: 4px;
+    padding: 5px;
+    border-radius: 0px;
     cursor: pointer;
     font-weight: bold;
 }
@@ -525,4 +525,37 @@
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+.projectColorPickerButton {
+    background-color: transparent;
+    color: #fff; /* Assuming white text for contrast, adjust if needed */
+    padding: 0;
+    font-size: 0.9em;
+    cursor: pointer;
+}
+
+.projectColorPickerButton:hover {
+    background-color: rgba(255, 255, 255, 0.1); /* Subtle hover effect */
+}
+
+.projectColorPaletteContainer {
+    display: flex;
+    justify-content: flex-start; /* Align palette to the start, near the button */
+    padding: 10px;
+    margin-bottom: 10px; /* Space before the add task form */
+    background-color: rgba(0, 0, 0, 0.1); /* Optional: slight background for the container */
+    border-radius: 4px;
+}
+
+/* Styles for colorPalette and colorOption are assumed to be existing and reused */
+/* We can add a specific style for a cancel button in the palette if needed */
+.cancelColorOption {
+    background-color: #f0f0f0; /* Light grey, distinct from colors */
+    color: #333;
+    border: 1px solid #ccc;
+}
+
+.cancelColorOption:hover {
+    background-color: #e0e0e0;
 }

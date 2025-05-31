@@ -33,6 +33,7 @@ interface ProjectLaneProps {
         updatedTaskData: Partial<Omit<Task, 'id'>>
     ) => void;
     onDeleteTask: (projectId: string, taskId: string) => void;
+    onUpdateProjectTaskColor: (projectId: string, color?: string) => void;
 }
 
 const PREDEFINED_TASK_COLORS = [
@@ -56,7 +57,8 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
     onUpdateProjectTitle,
     onAddTask,
     onUpdateTask,
-    onDeleteTask
+    onDeleteTask,
+    onUpdateProjectTaskColor
 }) => {
     const [isEditingProjectTitle, setIsEditingProjectTitle] = useState(false);
     const [editingProjectTitle, setEditingProjectTitle] = useState(project.title);
@@ -78,7 +80,7 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
     const [personNameInput, setPersonNameInput] = useState('');
     const [personSuggestions, setPersonSuggestions] = useState<Person[]>([]);
 
-    const [pickingColorForTask, setPickingColorForTask] = useState<string | null>(null); // Task ID
+    const [isPickingProjectColor, setIsPickingProjectColor] = useState<boolean>(false);
 
     const [showCompleted, setShowCompleted] = useState<{ [taskId: string]: boolean }>({});
 
@@ -338,13 +340,13 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
         setEditingReminderTaskId(null);
     };
 
-    const handleSetTaskColor = (taskId: string, color?: string) => {
-        onUpdateTask(project.id, taskId, { color: color });
-        setPickingColorForTask(null);
+    const handleSetProjectTaskColor = (color?: string) => {
+        onUpdateProjectTaskColor(project.id, color);
+        setIsPickingProjectColor(false);
     };
 
-    const toggleColorPicker = (taskId: string) => {
-        setPickingColorForTask(pickingColorForTask === taskId ? null : taskId);
+    const toggleProjectColorPicker = () => {
+        setIsPickingProjectColor(!isPickingProjectColor);
     };
 
     const toggleShowCompleted = (taskId: string) => {
@@ -433,16 +435,62 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
                             <FontAwesomeIcon icon={faEdit} />
                         </button>
                     </Tippy>
+                    <Tippy content='Change Project Color' placement='top' theme='material'>
+                        <button
+                            onClick={toggleProjectColorPicker}
+                            className={styles.projectColorPickerButton}
+                        >
+                            <FontAwesomeIcon
+                                icon={faPalette}
+                                style={{ color: project.taskColor ? '#fff' : '#333' }}
+                            />
+                        </button>
+                    </Tippy>
+                    <Tippy content='Delete Project' placement='top' theme='material'>
+                        <button
+                            onClick={() => onDeleteProject(project.id)}
+                            className={styles.deleteProjectBtn}
+                        >
+                            <FontAwesomeIcon icon={faTrashAlt} />
+                        </button>
+                    </Tippy>
                 </div>
-                <Tippy content='Delete Project' placement='top' theme='material'>
-                    <button
-                        onClick={() => onDeleteProject(project.id)}
-                        className={styles.deleteProjectBtn}
-                    >
-                        <FontAwesomeIcon icon={faTrashAlt} />
-                    </button>
-                </Tippy>
             </div>
+
+            {isPickingProjectColor && (
+                <div className={styles.projectColorPaletteContainer}>
+                    <div className={styles.colorPalette}>
+                        <Tippy content='Default Color' placement='top' theme='material'>
+                            <button
+                                className={`${styles.colorOption} ${styles.noColorOption}`}
+                                onClick={() => handleSetProjectTaskColor(undefined)}
+                                aria-label='Default color'
+                            >
+                                <FontAwesomeIcon icon={faBan} />
+                            </button>
+                        </Tippy>
+                        {PREDEFINED_TASK_COLORS.map((color) => (
+                            <Tippy content={color} placement='top' theme='material' key={color}>
+                                <button
+                                    className={styles.colorOption}
+                                    style={{ backgroundColor: color }}
+                                    onClick={() => handleSetProjectTaskColor(color)}
+                                    aria-label={`Set color to ${color}`}
+                                />
+                            </Tippy>
+                        ))}
+                        <Tippy content='Cancel' placement='top' theme='material'>
+                            <button
+                                onClick={toggleProjectColorPicker}
+                                className={`${styles.colorOption} ${styles.cancelColorOption}`}
+                                aria-label='Cancel color change'
+                            >
+                                <FontAwesomeIcon icon={faTimes} />
+                            </button>
+                        </Tippy>
+                    </div>
+                </div>
+            )}
 
             <form onSubmit={handleAddNewTask} className={styles.addTaskForm}>
                 <input
@@ -465,13 +513,12 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
                     const reminderValueForInput = task.reminder
                         ? new Date(task.reminder).toISOString().substring(0, 16)
                         : '';
-                    const currentTaskColor = task.color || project.taskColor; // Use task color if set, else project color
 
                     return (
                         <div
                             key={task.id}
                             className={styles.taskCard}
-                            style={{ backgroundColor: currentTaskColor }}
+                            style={{ backgroundColor: project.taskColor || '#f0f0f0' }}
                         >
                             <div className={styles.taskHeader}>
                                 {editingTaskId === task.id ? (
@@ -751,62 +798,6 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
                                                 <FontAwesomeIcon icon={faTimes} size='sm' />
                                             </button>
                                         </Tippy>
-                                    )}
-                                </div>
-
-                                {/* Task Color Picker Button and Palette */}
-                                <div className={styles.taskActionsContainer}>
-                                    <Tippy
-                                        content='Change Task Color'
-                                        placement='top'
-                                        theme='material'
-                                    >
-                                        <button
-                                            onClick={() => toggleColorPicker(task.id)}
-                                            className={styles.taskColorPickerButton}
-                                            style={{ backgroundColor: currentTaskColor }}
-                                        >
-                                            <FontAwesomeIcon
-                                                icon={faPalette}
-                                                style={{ color: task.color ? '#fff' : '#333' }}
-                                            />
-                                        </button>
-                                    </Tippy>
-                                    {pickingColorForTask === task.id && (
-                                        <div className={styles.colorPalette}>
-                                            <Tippy
-                                                content='Default (Inherit from Project)'
-                                                placement='top'
-                                                theme='material'
-                                            >
-                                                <button
-                                                    className={`${styles.colorOption} ${styles.noColorOption}`}
-                                                    onClick={() =>
-                                                        handleSetTaskColor(task.id, undefined)
-                                                    }
-                                                    aria-label='Default color'
-                                                >
-                                                    <FontAwesomeIcon icon={faBan} />
-                                                </button>
-                                            </Tippy>
-                                            {PREDEFINED_TASK_COLORS.map((color) => (
-                                                <Tippy
-                                                    content={color}
-                                                    placement='top'
-                                                    theme='material'
-                                                    key={color}
-                                                >
-                                                    <button
-                                                        className={styles.colorOption}
-                                                        style={{ backgroundColor: color }}
-                                                        onClick={() =>
-                                                            handleSetTaskColor(task.id, color)
-                                                        }
-                                                        aria-label={`Set color to ${color}`}
-                                                    />
-                                                </Tippy>
-                                            ))}
-                                        </div>
                                     )}
                                 </div>
                             </div>
