@@ -1,0 +1,38 @@
+/* src/components/TooltipStyles.css */
+
+/* Material Design inspired tooltip theme for Tippy.js */
+.tippy-box[data-theme~='material'] {
+    background-color: #323232; /* Material Design tooltip background color */
+    color: #ffffff; /* Light text color */
+    border-radius: 4px;
+    font-size: 13px; /* Material Design tooltip font size */
+    line-height: 1.4;
+    padding: 6px 10px; /* Vertical and horizontal padding */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    font-family: 'Roboto', 'Segoe UI', sans-serif; /* Material Design font stack */
+}
+
+/* Arrow for the material theme - optional, but common */
+.tippy-box[data-theme~='material'][data-placement^='top'] > .tippy-arrow {
+    border-top-color: #323232;
+}
+
+.tippy-box[data-theme~='material'][data-placement^='bottom'] > .tippy-arrow {
+    border-bottom-color: #323232;
+}
+
+.tippy-box[data-theme~='material'][data-placement^='left'] > .tippy-arrow {
+    border-left-color: #323232;
+}
+
+.tippy-box[data-theme~='material'][data-placement^='right'] > .tippy-arrow {
+    border-right-color: #323232;
+}
+
+/* To ensure the arrow is not shown if you prefer a more minimal Material look */
+/* Uncomment the following to hide the arrow for the material theme */
+/*
+.tippy-box[data-theme~='material'] > .tippy-arrow {
+    display: none;
+}
+*/
