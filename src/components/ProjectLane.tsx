@@ -592,6 +592,7 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
                                             onDeleteTask(project.id, task.id);
                                         }}
                                         className={styles.deleteTaskBtn}
+                                        aria-label="Delete Task" // Added aria-label
                                     >
                                         <FontAwesomeIcon icon={faTimes} />
                                     </button>

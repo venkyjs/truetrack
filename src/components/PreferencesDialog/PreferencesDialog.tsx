@@ -33,7 +33,7 @@ const PreferencesDialog: FC<PreferencesDialogProps> = ({ isOpen, onClose, onWall
 
     return (
         <div className={styles.dialogOverlay}>
-            <div className={styles.dialog}>
+            <div className={styles.dialog} role="dialog" aria-modal="true">
                 <div className={styles.header}>
                     <h2>Preferences</h2>
                     <button onClick={onClose} className={styles.closeButton}>

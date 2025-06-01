@@ -31,6 +31,7 @@ const AppHeader: FC<AppHeaderProps> = ({ onOpenPreferences, onAddProject }) => {
                     <button
                         onClick={onOpenPreferences}
                         className={`${styles.controlButton} ${styles.settingsButton}`}
+                        aria-label="Preferences" // Added aria-label
                     >
                         <FontAwesomeIcon icon={faCog} />
                     </button>
