@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import type { FC } from 'react';
 // Import global types
-import type { Project, Task as ProjectTask, Person, TaskItem as ProjectTaskItem } from './types';
+import type { Project, Task as ProjectTask, Person } from './types';
 
 import ProjectLane from './components/ProjectLane';
 import styles from './App.module.css';

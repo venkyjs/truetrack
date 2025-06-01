@@ -11,10 +11,7 @@ import {
     faPalette,
     faTag,
     faBell,
-    faBellSlash,
-    faBan,
-    faCheck,
-    faUndo
+    faBellSlash
 } from '@fortawesome/free-solid-svg-icons';
 import Tippy from '@tippyjs/react';
 import AirDatepicker from 'air-datepicker';
@@ -96,9 +93,6 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
 
     const colorPickerRef = useRef<HTMLDivElement>(null);
     const colorInputRef = useRef<HTMLInputElement>(null);
-
-    // Helper to get person object by ID
-    const getPersonById = (id: string): Person | undefined => people.find((p) => p.id === id);
 
     useEffect(() => {
         if (taggingPersonTaskId && personNameInput) {
@@ -339,14 +333,6 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
             // We need to ensure it shows after being set up, if not inline
             setTimeout(() => datepickerRefs.current[task.id]?.show(), 0);
         }
-    };
-
-    const handleDateSelect = (taskId: string, date?: Date | Date[] | undefined) => {
-        const selectedDate = Array.isArray(date) ? date[0] : date;
-        onUpdateTask(project.id, taskId, {
-            reminder: selectedDate ? selectedDate.toISOString() : undefined
-        });
-        setEditingReminderTaskId(null); // Close picker after selection
     };
 
     const handleClearReminder = (taskId: string) => {

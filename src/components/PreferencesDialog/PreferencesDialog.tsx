@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import type { ChangeEvent, FC } from 'react';
 import styles from './PreferencesDialog.module.css';
 

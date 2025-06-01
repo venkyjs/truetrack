@@ -6,7 +6,9 @@
     "main": "dist-electron/main.js",
     "scripts": {
         "dev": "vite",
-        "build": "tsc -b && vite build && electron-builder",
+        "build": "tsc -b && vite build && electron-builder --publish=never",
+        "build-dev": "tsc -b && vite build && electron-builder --publish=never",
+        "compile": "tsc -b && vite build",
         "lint": "eslint .",
         "preview": "vite preview"
     },
@@ -58,7 +60,14 @@
             "target": "dmg"
         },
         "win": {
-            "target": "nsis"
+            "target": [
+                {
+                    "target": "portable",
+                    "arch": [
+                        "x64"
+                    ]
+                }
+            ]
         },
         "linux": {
             "target": "AppImage"
