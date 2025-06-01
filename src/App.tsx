@@ -131,8 +131,8 @@ const App: FC = () => {
         if (appWallpaper) {
             localStorage.setItem('appWallpaper', appWallpaper);
             document.body.style.backgroundImage = `url(${appWallpaper})`;
-            document.body.style.backgroundSize = 'cover';
             document.body.style.backgroundPosition = 'center';
+            document.body.style.backgroundSize = 'cover';
             document.body.style.backgroundRepeat = 'no-repeat';
         } else {
             localStorage.removeItem('appWallpaper');

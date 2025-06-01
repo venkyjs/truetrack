@@ -442,7 +442,7 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
                     onBlur={handleItemTextSave}
                     onKeyDown={handleItemTextKeyDown}
                     autoFocus
-                    className={styles.taskItemTextInput}
+                    className={styles.stickyInput}
                 />
             ) : (
                 <span
@@ -544,8 +544,8 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
                     className={styles.stickyInput}
                 />
                 <Tippy content='Add Task' placement='top' theme='material'>
-                    <button type='submit' className={styles.addTaskBtn}>
-                        <FontAwesomeIcon icon={faPlus} /> Add
+                    <button type='submit' className={styles.addPersonBtn}>
+                        <FontAwesomeIcon icon={faPlus} />
                     </button>
                 </Tippy>
             </form>
@@ -801,7 +801,7 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
                                             {!editingReminderTaskId ||
                                             editingReminderTaskId !== task.id ? (
                                                 task.reminder ? (
-                                                    <>
+                                                    <div className={styles.reminderSetContainer}>
                                                         <Tippy
                                                             content='Edit Reminder'
                                                             placement='top'
@@ -842,7 +842,7 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
                                                                 />
                                                             </button>
                                                         </Tippy>
-                                                    </>
+                                                    </div>
                                                 ) : (
                                                     <Tippy
                                                         content='Set Reminder'

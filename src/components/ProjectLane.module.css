@@ -29,7 +29,7 @@
 
 .projectTitle {
     margin: 0;
-    padding: 5px 0; /* Match projectTitleInput padding */
+    padding: 5px 10px; /* Match projectTitleInput padding */
     font-size: 1.2em;
     color: #fff;
     flex-grow: 1;
@@ -64,6 +64,7 @@
     border: none;
     border-radius: 0px;
     color: #fff;
+    font-size: 0.8em;
 }
 
 .stickyInput:focus-visible {
@@ -72,12 +73,13 @@
 
 .stickyInput::placeholder {
     color: rgba(255, 255, 255, 0.6);
+    font-size: 0.8em;
 }
 
 .projectTitleInput {
     font-size: 1.2em; /* Match projectTitle font-size */
     font-weight: bold; /* Match projectTitle font-weight */
-    padding: 5px 0; /* Match projectTitle padding */
+    padding: 4px 10px; /* Match projectTitle padding */
     line-height: 1.4; /* Match projectTitle line-height */
     min-height: 1.6em; /* Match projectTitle min-height */
     outline: none;
@@ -90,7 +92,7 @@
 }
 
 .projectTitleInput:focus {
-    border-bottom-color: #1890ff;
+    border-bottom-color: transparent;
 }
 
 .deleteProjectBtn {
@@ -113,18 +115,51 @@
     display: flex;
     flex-direction: column;
     gap: 10px; /* Space between task cards */
+    overflow: visible;
 }
 
 .taskCard {
-    background-color: #ffffff; /* Default background, will be overridden by JS style */
-    padding: 10px;
-
-    /* box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); */
-    box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.2); /* More pronounced shadow */
+    position: relative;
     display: flex; /* Allow for task header and content alignment */
     flex-direction: column; /* Stack header and content */
-    transform: rotate(0deg); /* Slight rotation for sticky note effect */
-    transition: transform 0.1s ease-in-out, box-shadow 0.1s ease-in-out; /* Smooth hover effect */
+    background: #fff;
+    border-radius: 0;
+    padding: 5px;
+}
+
+.taskCard::before,
+.taskCard::after {
+    content: '';
+    position: absolute;
+    bottom: 10px;
+    width: 40%;
+    height: 10px;
+    box-shadow: 0 5px 14px rgba(0, 0, 0, 0.7);
+    z-index: -1;
+    transition: all 0.3s ease-in-out;
+}
+
+.taskCard::before {
+    left: 15px;
+    transform: skew(-5deg) rotate(-5deg);
+}
+
+.taskCard::after {
+    right: 15px;
+    transform: skew(5deg) rotate(5deg);
+}
+
+.taskCard:hover::before,
+.taskCard:hover::after {
+    box-shadow: 0 2px 14px rgba(0, 0, 0, 0.4);
+}
+
+.taskCard:hover::before {
+    left: 5px;
+}
+
+.taskCard:hover::after {
+    right: 5px;
 }
 
 .taskHeader {
@@ -138,11 +173,12 @@
 .taskTitle {
     margin: 0;
     font-weight: bold;
-    color: #333;
+    color: #000;
     flex-grow: 1; /* Allow title to take space */
     cursor: pointer; /* Indicate it's interactive */
     line-height: 1.4;
     padding: 2px 0;
+    font-size: 0.9em;
 }
 
 .taskTitleInput {
@@ -199,7 +235,7 @@
 
 .taskItemText {
     flex-grow: 1;
-    font-size: 0.95em;
+    font-size: 0.8em;
     padding: 2px 0; /* Align with input if needed */
     cursor: pointer; /* Indicate it's interactive */
     line-height: 1.4;
@@ -245,7 +281,7 @@
 
 .completedItemText {
     text-decoration: line-through;
-    color: #888;
+    color: #ddd;
 }
 
 .completedSectionDetails {
@@ -256,13 +292,15 @@
 
 .completedSectionSummary {
     cursor: pointer;
-    font-weight: bold;
-    color: #555;
+    font-weight: 400;
+    color: #eee;
     margin-bottom: 5px;
+    font-size: 0.7em;
 }
 
 .completedSectionSummary:hover {
-    color: #000;
+    color: #fff;
+    font-weight: 700;
 }
 
 .completedItemsContainer {
@@ -280,8 +318,9 @@
     display: flex;
     gap: 8px;
     margin-top: 10px;
-    padding-top: 10px;
-    border-top: 1px solid #f0f0f0;
+    padding: 0 0 0 10px;
+    border: 1px solid #f0f0f0;
+    border-radius: 20px;
 }
 
 .addItemInput {
@@ -295,14 +334,13 @@
 }
 
 .addItemBtn {
-    background-color: #1890ff; /* Blue for add item */
-    color: white;
-    border: none;
-    padding: 0px 10px;
-    border-radius: 4px;
+    background-color: transparent;
+    border: 1px dashed #ccc;
+    color: #fff;
+    padding: 4px 8px;
+    border-radius: 14px; /* Pill shape */
     cursor: pointer;
-    font-weight: bold;
-    font-size: 0.9em;
+    font-size: 0.85em;
 }
 
 .addItemBtn:hover {
@@ -320,7 +358,7 @@
     display: flex;
     gap: 10px;
     margin-bottom: 15px;
-    padding-bottom: 15px;
+    padding-bottom: 5px;
     border-bottom: 1px solid #f0f0f0;
 }
 
@@ -682,6 +720,13 @@
     display: inline-flex;
     align-items: center;
     gap: 5px;
+    font-size: 0.7em;
+}
+
+.reminderSetContainer {
+    border: 1px solid #fff;
+    border-radius: 20px;
+    padding: 0 10px;
 }
 
 .clearReminderBtnInline {
