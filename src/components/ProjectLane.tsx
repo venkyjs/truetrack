@@ -413,8 +413,7 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
 
     const projectLaneStyle = {
         borderTop: `5px solid ${project.taskColor || '#ccc'}`, // Use project.taskColor for top border
-        borderRight: `3px solid ${project.taskColor || '#ccc'}`, // Use project.taskColor for top border
-        backgroundColor: project.taskColor ? `${project.taskColor}10` : '#f9f9f9' // Very light version of the project color
+        borderRight: `3px solid ${project.taskColor || '#ccc'}` // Use project.taskColor for top border
     };
 
     const taskListStyle = {
