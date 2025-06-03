@@ -152,6 +152,7 @@ async function createWindow(projectPathFromArgument: string) {
         icon: iconPath || undefined, // Pass undefined if iconPath is empty
         width: 1200,
         height: 800,
+        autoHideMenuBar: true, // Hide the menu bar
         webPreferences: {
             preload: PRELOAD_SCRIPT_PATH, // Use the new robust path
             nodeIntegration: false,
