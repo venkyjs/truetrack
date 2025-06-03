@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import type { FC } from 'react';
 // Import global types
 import type { Project, Task as ProjectTask, Person } from './types';
+import { idbGet, idbSet, idbRemove } from './utils/indexedDB'; // Added import
 
 import ProjectLane from './components/ProjectLane';
 import styles from './App.module.css';
@@ -84,61 +85,120 @@ const initialProjectsData: Project[] = [
 export const availablePeople: Person[] = [...initialGlobalPeople];
 
 const App: FC = () => {
-    const [projects, setProjects] = useState<Project[]>(() => {
-        const savedProjects = localStorage.getItem('projectsData');
-        try {
-            const parsedProjects = savedProjects ? JSON.parse(savedProjects) : initialProjectsData;
-            return parsedProjects.map((p: Project) => ({
-                ...p,
-                taskColor: p.taskColor || getRandomPastelColor(),
-                tasks: p.tasks.map((t) => ({
-                    ...t,
-                    reminder: t.reminder ? new Date(t.reminder).toISOString() : undefined
-                }))
-            }));
-        } catch (error) {
-            console.error('Failed to parse projectsData from localStorage', error);
-            return initialProjectsData.map((p) => ({
-                ...p,
-                taskColor: p.taskColor || getRandomPastelColor(),
-                tasks: p.tasks.map((t) => ({
-                    ...t,
-                    reminder: t.reminder ? new Date(t.reminder).toISOString() : undefined
-                }))
-            }));
-        }
-    });
+    const [projects, setProjects] = useState<Project[]>([]);
+    const [nextProjectId, setNextProjectId] = useState<number>(1);
+    const [isPreferencesOpen, setIsPreferencesOpen] = useState<boolean>(false);
+    const [appWallpaper, setAppWallpaper] = useState<string | null>(null);
+    const [dataLoaded, setDataLoaded] = useState(false); // To prevent saving initial empty state
 
-    const [nextProjectId, setNextProjectId] = useState<number>(() => {
-        if (projects.length === 0) return 1;
+    // Load initial data from IndexedDB
+    useEffect(() => {
+        const loadData = async () => {
+            try {
+                const savedProjects = await idbGet<Project[]>('projectsData');
+                const wallpaper = await idbGet<string>('appWallpaper');
+
+                if (savedProjects) {
+                    const parsedProjects = savedProjects.map((p: Project) => ({
+                        ...p,
+                        taskColor: p.taskColor || getRandomPastelColor(),
+                        tasks: p.tasks.map((t) => ({
+                            ...t,
+                            reminder: t.reminder ? new Date(t.reminder).toISOString() : undefined
+                        }))
+                    }));
+                    setProjects(parsedProjects);
+                } else {
+                    setProjects(
+                        initialProjectsData.map((p) => ({
+                            // Ensure initial data also has processed dates
+                            ...p,
+                            taskColor: p.taskColor || getRandomPastelColor(),
+                            tasks: p.tasks.map((t) => ({
+                                ...t,
+                                reminder: t.reminder
+                                    ? new Date(t.reminder).toISOString()
+                                    : undefined
+                            }))
+                        }))
+                    );
+                }
+
+                if (wallpaper) {
+                    setAppWallpaper(wallpaper);
+                }
+            } catch (error) {
+                console.error('Failed to load data from IndexedDB', error);
+                // Fallback to initial data if IDB fails
+                setProjects(
+                    initialProjectsData.map((p) => ({
+                        ...p,
+                        taskColor: p.taskColor || getRandomPastelColor(),
+                        tasks: p.tasks.map((t) => ({
+                            ...t,
+                            reminder: t.reminder ? new Date(t.reminder).toISOString() : undefined
+                        }))
+                    }))
+                );
+            } finally {
+                setDataLoaded(true);
+            }
+        };
+        loadData();
+    }, []);
+
+    // Effect to derive nextProjectId from projects
+    useEffect(() => {
+        if (projects.length === 0 && dataLoaded) {
+            // Check dataLoaded before setting to 1
+            setNextProjectId(1); // If no projects after load, start ID at 1
+            return;
+        }
         const ids = projects.map((p) => parseInt(p.id.split('-')[1] || '0', 10));
         const numericIds = ids.filter((id) => !isNaN(id));
-        if (numericIds.length === 0) return 1;
+        if (numericIds.length === 0 && dataLoaded) {
+            // Check dataLoaded before setting to 1
+            setNextProjectId(1);
+            return;
+        }
         const maxId = Math.max(...numericIds);
-        return maxId < 0 ? 1 : maxId + 1;
-    });
+        setNextProjectId(maxId < 0 ? 1 : maxId + 1);
+    }, [projects, dataLoaded]);
 
-    const [isPreferencesOpen, setIsPreferencesOpen] = useState<boolean>(false);
-    const [appWallpaper, setAppWallpaper] = useState<string | null>(() => {
-        return localStorage.getItem('appWallpaper') || null;
-    });
-
+    // Save projects to IndexedDB
     useEffect(() => {
-        localStorage.setItem('projectsData', JSON.stringify(projects));
-    }, [projects]);
+        if (dataLoaded && projects.length > 0) {
+            // Only save if data has loaded and there are projects
+            idbSet('projectsData', projects).catch((error) =>
+                console.error('Failed to save projects to IndexedDB', error)
+            );
+        } else if (dataLoaded && projects.length === 0) {
+            // If all projects are deleted
+            idbRemove('projectsData').catch((error) =>
+                console.error('Failed to remove projectsData from IndexedDB', error)
+            );
+        }
+    }, [projects, dataLoaded]);
 
+    // Save wallpaper and update body style
     useEffect(() => {
+        if (!dataLoaded) return; // Don't run on initial load before wallpaper is fetched
+
         if (appWallpaper) {
-            localStorage.setItem('appWallpaper', appWallpaper);
+            idbSet('appWallpaper', appWallpaper).catch((error) =>
+                console.error('Failed to save appWallpaper to IndexedDB', error)
+            );
             document.body.style.backgroundImage = `url(${appWallpaper})`;
             document.body.style.backgroundPosition = 'center';
             document.body.style.backgroundSize = 'cover';
             document.body.style.backgroundRepeat = 'no-repeat';
         } else {
-            localStorage.removeItem('appWallpaper');
+            idbRemove('appWallpaper').catch((error) =>
+                console.error('Failed to remove appWallpaper from IndexedDB', error)
+            );
             document.body.style.backgroundImage = '';
         }
-    }, [appWallpaper]);
+    }, [appWallpaper, dataLoaded]);
 
     const handleAddProject = () => {
         const newProject: Project = {
@@ -148,7 +208,7 @@ const App: FC = () => {
             taskColor: getRandomPastelColor()
         };
         setProjects([...projects, newProject]);
-        setNextProjectId((prevId) => prevId + 1);
+        // nextProjectId will update via its own useEffect
     };
 
     const handleDeleteProject = (projectId: string) => {
@@ -226,7 +286,7 @@ const App: FC = () => {
         <div className={styles.app}>
             <AppHeader
                 onOpenPreferences={() => setIsPreferencesOpen(true)}
-                onAddProject={handleAddProject} // Pass handleAddProject
+                onAddProject={handleAddProject}
             />
             <main className={styles.mainContent}>
                 {projects.map((project) => (

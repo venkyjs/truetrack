@@ -3,11 +3,10 @@
     "private": true,
     "version": "0.0.0",
     "type": "module",
-    "main": "dist-electron/main.js",
     "scripts": {
         "dev": "vite",
-        "build": "tsc -b && vite build && electron-builder --publish=never",
-        "build-dev": "tsc -b && vite build && electron-builder --publish=never",
+        "build": "tsc -b && vite build",
+        "build-dev": "tsc -b && vite build",
         "compile": "tsc -b && vite build",
         "lint": "eslint .",
         "preview": "vite preview"
@@ -21,7 +20,6 @@
         "classnames": "^2.5.1",
         "@melloware/coloris": "^0.24.2",
         "date-fns": "^4.1.0",
-        "fs-extra": "^11.3.0",
         "react": "^19.1.0",
         "react-dom": "^19.1.0"
     },
@@ -32,45 +30,12 @@
         "@types/react": "^19.1.2",
         "@types/react-dom": "^19.1.2",
         "@vitejs/plugin-react": "^4.4.1",
-        "electron": "^36.3.2",
-        "electron-builder": "^25.0.0",
         "eslint": "^9.25.0",
         "eslint-plugin-react-hooks": "^5.2.0",
         "eslint-plugin-react-refresh": "^0.4.19",
         "globals": "^16.0.0",
         "typescript": "~5.8.3",
         "typescript-eslint": "^8.30.1",
-        "vite": "^6.3.5",
-        "vite-plugin-electron": "^0.29.0",
-        "vite-plugin-electron-renderer": "^0.14.6"
-    },
-    "build": {
-        "appId": "com.projectpulse.app",
-        "productName": "Project Pulse",
-        "directories": {
-            "output": "release",
-            "buildResources": "build"
-        },
-        "files": [
-            "dist-electron/",
-            "dist/",
-            "package.json"
-        ],
-        "mac": {
-            "target": "dmg"
-        },
-        "win": {
-            "target": [
-                {
-                    "target": "portable",
-                    "arch": [
-                        "x64"
-                    ]
-                }
-            ]
-        },
-        "linux": {
-            "target": "AppImage"
-        }
+        "vite": "^6.3.5"
     }
 }
