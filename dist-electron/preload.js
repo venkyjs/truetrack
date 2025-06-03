@@ -1,22 +1,21 @@
-"use strict";
-const electron = require("electron");
+import { contextBridge, ipcRenderer } from "electron";
 console.log("[Preload] Preload script evaluating.");
 console.log("[Preload] Attempting to expose electronAPI...");
 try {
-  electron.contextBridge.exposeInMainWorld("electronAPI", {
-    openDirectoryDialog: () => electron.ipcRenderer.invoke("dialog:openDirectory"),
+  contextBridge.exposeInMainWorld("electronAPI", {
+    openDirectoryDialog: () => ipcRenderer.invoke("dialog:openDirectory"),
     // Listen for project data path changes from main process
     onSetProjectDataPath: (callback) => {
       const handler = (_event, path) => callback(path);
-      electron.ipcRenderer.on("set-project-data-path", handler);
+      ipcRenderer.on("set-project-data-path", handler);
       return () => {
-        electron.ipcRenderer.removeListener("set-project-data-path", handler);
+        ipcRenderer.removeListener("set-project-data-path", handler);
       };
     },
-    loadProjects: () => electron.ipcRenderer.invoke("load-projects"),
-    saveProjects: (projects) => electron.ipcRenderer.invoke("save-projects", projects),
-    loadPeople: () => electron.ipcRenderer.invoke("load-people"),
-    savePeople: (people) => electron.ipcRenderer.invoke("save-people", people)
+    loadProjects: () => ipcRenderer.invoke("load-projects"),
+    saveProjects: (projects) => ipcRenderer.invoke("save-projects", projects),
+    loadPeople: () => ipcRenderer.invoke("load-people"),
+    savePeople: (people) => ipcRenderer.invoke("save-people", people)
     // Temporarily comment out scheduleNotification if it was causing issues during build
     /* scheduleNotification: (options: { title: string; body: string; taskDate: string }): Promise<{success: boolean, error?: string, message?: string}> => 
     ipcRenderer.invoke('schedule-notification', options), */
@@ -95,4 +94,6 @@ window.onmessage = (ev) => {
   if (ev.data.payload === "removeLoading") removeLoading();
 };
 setTimeout(removeLoading, 4999);
+console.log("[Preload] Preload script evaluation complete.");
+4999);
 console.log("[Preload] Preload script evaluation complete.");

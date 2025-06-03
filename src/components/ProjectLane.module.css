@@ -724,9 +724,8 @@
 }
 
 .datepickerContainer {
-    /* The AirDatepicker will create its own element with class \'air-datepicker-global-container\' */
-    /* This container is mostly a placeholder for the ref, but can be used for positioning if needed */
-    position: relative; /* Allows absolute positioning of the datepicker if it doesn't do so itself */
+    /* Container for react-datetime-picker component */
+    position: relative;
     z-index: 20; /* Ensure picker is above other elements in the card */
 }
 
@@ -758,31 +757,6 @@
 
 .clearReminderBtnInline:hover {
     color: #ef4444; /* Match existing clearReminderBtn */
-}
-
-/* Styles for AirDatepicker custom buttons */
-/* The datepicker appends its UI to the body by default, so these classes are global-like */
-/* If you want to scope them, you might need to target them within .air-datepicker-global-container */
-
-:global(.air-datepicker-button-apply) {
-    /* Example: Make it green */
-    background-color: #52c41a !important; /* Important to override default if needed */
-    color: white !important;
-}
-
-:global(.air-datepicker-button-apply:hover) {
-    background-color: #389e0d !important;
-}
-
-:global(.air-datepicker-button-close) {
-    /* Example: Make it grey */
-    background-color: #f0f0f0 !important;
-    color: #333 !important;
-    border: 1px solid #ccc !important;
-}
-
-:global(.air-datepicker-button-close:hover) {
-    background-color: #e0e0e0 !important;
 }
 
 /* Remove the ::before pseudo-element since we're using FontAwesome icon now */

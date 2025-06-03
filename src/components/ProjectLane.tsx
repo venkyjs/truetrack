@@ -15,9 +15,10 @@ import {
     faBellSlash
 } from '@fortawesome/free-solid-svg-icons';
 import Tippy from '@tippyjs/react';
-import AirDatepicker from 'air-datepicker';
-import 'air-datepicker/air-datepicker.css';
-import en from 'air-datepicker/locale/en'; // Import English locale
+import DateTimePicker from 'react-datetime-picker';
+import 'react-datetime-picker/dist/DateTimePicker.css';
+import 'react-calendar/dist/Calendar.css';
+import 'react-clock/dist/Clock.css';
 import { format } from 'date-fns'; // For formatting the date
 import { HexColorPicker } from 'react-colorful';
 // Ensure TooltipStyles.css is imported in a global scope, like App.tsx or main.tsx
@@ -89,8 +90,6 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
 
     const [showColorPicker, setShowColorPicker] = useState(false);
     const [colorPickerPosition, setColorPickerPosition] = useState({ top: 0, left: 0 });
-
-    const datepickerRefs = useRef<{ [taskId: string]: AirDatepicker<HTMLElement> | null }>({});
 
     const colorPickerRef = useRef<HTMLDivElement>(null);
     const colorPickerButtonRef = useRef<HTMLButtonElement>(null);
@@ -324,15 +323,10 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
 
     const handleReminderIconClick = (task: Task) => {
         if (editingReminderTaskId === task.id) {
-            // If already editing, clicking again could close it or do nothing.
-            // For now, let's make it close.
-            datepickerRefs.current[task.id]?.hide();
+            // If already editing, clicking again closes it
             setEditingReminderTaskId(null);
         } else {
             setEditingReminderTaskId(task.id);
-            // Datepicker instance will be created and shown via useEffect or directly in JSX
-            // We need to ensure it shows after being set up, if not inline
-            setTimeout(() => datepickerRefs.current[task.id]?.show(), 0);
         }
     };
 
@@ -712,79 +706,21 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
                                         {/* Reminder Button/Input grouped into a new div */}
                                         <div className={styles.reminderSection}>
                                             {editingReminderTaskId === task.id && (
-                                                <div
-                                                    ref={(el) => {
-                                                        if (
-                                                            el &&
-                                                            !datepickerRefs.current[task.id]
-                                                        ) {
-                                                            const currentReminderDate =
-                                                                task.reminder
-                                                                    ? new Date(task.reminder)
-                                                                    : new Date();
-                                                            datepickerRefs.current[task.id] =
-                                                                new AirDatepicker(el, {
-                                                                    timepicker: true,
-                                                                    selectedDates:
-                                                                        currentReminderDate
-                                                                            ? [currentReminderDate]
-                                                                            : [],
-                                                                    inline: false,
-                                                                    timeFormat: 'hh:mm aa',
-                                                                    locale: en,
-                                                                    minDate: new Date(),
-                                                                    buttons: [
-                                                                        {
-                                                                            content: 'Apply',
-                                                                            className:
-                                                                                'air-datepicker-button-apply',
-                                                                            onClick: (
-                                                                                dp: AirDatepicker<HTMLElement>
-                                                                            ) => {
-                                                                                const selectedDate =
-                                                                                    dp
-                                                                                        .selectedDates[0];
-                                                                                onUpdateTask(
-                                                                                    project.id,
-                                                                                    task.id,
-                                                                                    {
-                                                                                        reminder:
-                                                                                            selectedDate
-                                                                                                ? selectedDate.toISOString()
-                                                                                                : undefined
-                                                                                    }
-                                                                                );
-                                                                                dp.hide();
-                                                                                setEditingReminderTaskId(
-                                                                                    null
-                                                                                );
-                                                                            }
-                                                                        },
-                                                                        {
-                                                                            content: 'Close',
-                                                                            className:
-                                                                                'air-datepicker-button-close',
-                                                                            onClick: (
-                                                                                dp: AirDatepicker<HTMLElement>
-                                                                            ) => {
-                                                                                dp.hide();
-                                                                                setEditingReminderTaskId(
-                                                                                    null
-                                                                                );
-                                                                            }
-                                                                        }
-                                                                    ]
-                                                                });
-                                                        } else if (
-                                                            !el &&
-                                                            datepickerRefs.current[task.id]
-                                                        ) {
-                                                            datepickerRefs.current[
-                                                                task.id
-                                                            ]?.destroy();
-                                                            datepickerRefs.current[task.id] = null;
+                                                <DateTimePicker
+                                                    value={
+                                                        task.reminder
+                                                            ? new Date(task.reminder)
+                                                            : new Date()
+                                                    }
+                                                    onChange={(date: Date | null) => {
+                                                        if (date) {
+                                                            onUpdateTask(project.id, task.id, {
+                                                                reminder: date.toISOString()
+                                                            });
                                                         }
+                                                        setEditingReminderTaskId(null);
                                                     }}
+                                                    minDate={new Date()}
                                                     className={styles.datepickerContainer}
                                                 />
                                             )}
