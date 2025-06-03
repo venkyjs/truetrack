@@ -1,11 +1,22 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
 import './index.css';
 import App from './App.tsx';
+import './neutralino.d.ts';
 import '@fortawesome/fontawesome-svg-core/styles.css';
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-    <React.StrictMode>
+// Initialize Neutralino when it's available
+if (typeof window !== 'undefined' && (window as any).Neutralino) {
+    (window as any).Neutralino.init();
+
+    // Set up event listeners for Neutralino
+    (window as any).Neutralino.events.on('windowClose', () => {
+        (window as any).Neutralino.app.exit();
+    });
+}
+
+createRoot(document.getElementById('root')!).render(
+    <StrictMode>
         <App />
-    </React.StrictMode>
+    </StrictMode>
 );

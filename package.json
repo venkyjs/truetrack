@@ -3,11 +3,12 @@
     "private": true,
     "version": "0.0.0",
     "type": "module",
-    "main": "dist-electron/main.js",
     "scripts": {
         "dev": "vite",
-        "build": "tsc -b && vite build && electron-builder --publish=never",
-        "build-dev": "tsc -b && vite build && electron-builder --publish=never",
+        "build": "tsc -b && vite build",
+        "neu-dev": "neu run --frontend-lib-dev",
+        "neu-build": "neu build",
+        "neu-run": "neu run",
         "compile": "tsc -b && vite build",
         "lint": "eslint .",
         "preview": "vite preview"
@@ -19,61 +20,41 @@
         "@tippyjs/react": "^4.2.6",
         "classnames": "^2.5.1",
         "date-fns": "^4.1.0",
-        "fs-extra": "^11.3.0",
         "react": "^19.1.0",
         "react-calendar": "^6.0.0",
         "react-clock": "^6.0.0",
         "react-colorful": "^5.6.1",
-        "react-datetime-picker": "^3.5.0",
+        "react-datetime-picker": "^6.0.1",
         "react-dom": "^19.1.0"
     },
     "devDependencies": {
         "@eslint/js": "^9.25.0",
-        "@types/fs-extra": "^11.0.4",
+        "@neutralinojs/neu": "^11.4.0",
         "@types/node": "^22.15.29",
         "@types/react": "^19.1.2",
         "@types/react-datetime-picker": "^3.4.1",
         "@types/react-dom": "^19.1.2",
         "@vitejs/plugin-react": "^4.4.1",
-        "electron": "^36.3.2",
-        "electron-builder": "^25.0.0",
         "eslint": "^9.25.0",
         "eslint-plugin-react-hooks": "^5.2.0",
         "eslint-plugin-react-refresh": "^0.4.19",
         "globals": "^16.0.0",
         "typescript": "~5.8.3",
         "typescript-eslint": "^8.30.1",
-        "vite": "^6.3.5",
-        "vite-plugin-electron": "^0.29.0",
-        "vite-plugin-electron-renderer": "^0.14.6"
+        "vite": "^6.3.5"
     },
-    "build": {
-        "appId": "com.projectpulse.app",
-        "productName": "Project Pulse",
-        "directories": {
-            "output": "release",
-            "buildResources": "build"
+    "overrides": {
+        "react-datetime-picker": {
+            "react": "^19.1.0",
+            "react-dom": "^19.1.0"
         },
-        "files": [
-            "dist-electron/",
-            "dist/",
-            "package.json"
-        ],
-        "mac": {
-            "target": "dmg"
+        "react-calendar": {
+            "react": "^19.1.0",
+            "react-dom": "^19.1.0"
         },
-        "win": {
-            "target": [
-                {
-                    "target": "portable",
-                    "arch": [
-                        "x64"
-                    ]
-                }
-            ]
-        },
-        "linux": {
-            "target": "AppImage"
+        "react-clock": {
+            "react": "^19.1.0",
+            "react-dom": "^19.1.0"
         }
     }
 }
