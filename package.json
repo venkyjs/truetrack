@@ -1,5 +1,5 @@
 {
-    "name": "project-pulse-ui",
+    "name": "true-track",
     "private": true,
     "version": "0.0.0",
     "type": "module",
@@ -15,16 +15,18 @@
         "@fortawesome/fontawesome-svg-core": "^6.7.2",
         "@fortawesome/free-solid-svg-icons": "^6.7.2",
         "@fortawesome/react-fontawesome": "^0.2.2",
+        "@melloware/coloris": "^0.24.2",
         "@tippyjs/react": "^4.2.6",
         "air-datepicker": "^3.6.0",
         "classnames": "^2.5.1",
-        "@melloware/coloris": "^0.24.2",
+        "crypto-js": "^4.2.0",
         "date-fns": "^4.1.0",
         "react": "^19.1.0",
         "react-dom": "^19.1.0"
     },
     "devDependencies": {
         "@eslint/js": "^9.25.0",
+        "@types/crypto-js": "^4.2.2",
         "@types/fs-extra": "^11.0.4",
         "@types/node": "^22.15.29",
         "@types/react": "^19.1.2",

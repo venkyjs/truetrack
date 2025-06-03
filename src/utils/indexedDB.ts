@@ -8,7 +8,7 @@ interface MyDB extends IDBDatabase {
 
 let db: IDBDatabase | null = null;
 
-const openDB = (): Promise<IDBDatabase> => {
+export const openDB = (): Promise<IDBDatabase> => {
     return new Promise((resolve, reject) => {
         if (db) {
             resolve(db);

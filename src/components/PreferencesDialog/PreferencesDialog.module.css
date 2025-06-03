@@ -169,3 +169,89 @@
     border-color: #999;
     background-color: #f0f0f0;
 }
+
+/* Added styles for Data Management section */
+.textInput {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1em;
+    width: 100%; /* Make input take full width of its container */
+    box-sizing: border-box; /* Include padding and border in the element's total width and height */
+}
+
+.inputWithIcon {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.inputIcon {
+    position: absolute;
+    left: 10px;
+    color: #888;
+}
+
+.inputWithIcon .textInput {
+    padding-left: 35px; /* Make space for the icon */
+}
+
+.primaryButton {
+    background-color: #1890ff;
+    color: white;
+    border: none;
+}
+
+.primaryButton:hover {
+    background-color: #40a9ff;
+}
+
+.primaryButton:disabled {
+    background-color: #a0d9ff;
+    cursor: not-allowed;
+}
+
+.warningMessage {
+    background-color: #fffbe6; /* Light yellow background */
+    border: 1px solid #ffe58f; /* Yellow border */
+    color: #d46b08; /* Dark yellow/orange text */
+    padding: 10px 15px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    font-size: 0.9em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.warningMessage svg {
+    font-size: 1.2em;
+}
+
+.errorMessage {
+    background-color: #fff1f0; /* Light red background */
+    border: 1px solid #ffccc7; /* Red border */
+    color: #cf1322; /* Dark red text */
+    padding: 10px 15px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    font-size: 0.9em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.errorMessage svg {
+    font-size: 1.2em;
+}
+
+.successMessage {
+    background-color: #f6ffed; /* Light green background */
+    border: 1px solid #b7eb8f; /* Green border */
+    color: #389e0d; /* Dark green text */
+    padding: 10px 15px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    font-size: 0.9em;
+}
