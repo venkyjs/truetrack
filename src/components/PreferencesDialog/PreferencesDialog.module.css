@@ -16,11 +16,12 @@
     background-color: #fff;
     border-radius: 8px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-    width: 600px;
-    max-width: 90%;
+    width: 90vw; /* 90% of viewport width */
+    max-width: 90vw; /* Ensure it doesn't exceed 90% of viewport width */
+    height: 90vh; /* 90% of viewport height */
+    max-height: 90vh; /* Ensure it doesn't exceed 90% of viewport height */
     display: flex;
     flex-direction: column;
-    max-height: 80vh;
 }
 
 .header {
@@ -212,6 +213,10 @@
     cursor: not-allowed;
 }
 
+.standardMessage {
+    color: #000;
+}
+
 .warningMessage {
     background-color: #fffbe6; /* Light yellow background */
     border: 1px solid #ffe58f; /* Yellow border */
@@ -254,4 +259,33 @@
     border-radius: 4px;
     margin-bottom: 15px;
     font-size: 0.9em;
+}
+
+/* Styles for Data Management Tabs */
+.tabContainer {
+    display: flex;
+    margin-bottom: 20px; /* Space below the tabs */
+    border-bottom: 1px solid #eee; /* Separator line below tabs */
+}
+
+.tabButton {
+    padding: 10px 15px;
+    cursor: pointer;
+    border: none;
+    background-color: transparent;
+    font-size: 1em;
+    color: #555;
+    border-bottom: 2px solid transparent; /* For active indicator */
+    margin-right: 5px; /* Spacing between tab buttons */
+}
+
+.tabButton:hover {
+    background-color: #f0f0f0;
+    color: #333;
+}
+
+.tabButton.activeTab {
+    color: #1890ff;
+    font-weight: bold;
+    border-bottom: 2px solid #1890ff;
 }

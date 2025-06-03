@@ -19,6 +19,7 @@ interface PreferencesDialogProps {
 
 const PreferencesDialog: FC<PreferencesDialogProps> = ({ isOpen, onClose, onWallpaperChange }) => {
     const [selectedSection, setSelectedSection] = useState('general');
+    const [activeDataTab, setActiveDataTab] = useState('backup');
     const [selectedWallpaper, setSelectedWallpaper] = useState<string | null>(null);
     const [downloadPassphrase, setDownloadPassphrase] = useState('');
     const [restorePassphrase, setRestorePassphrase] = useState('');
@@ -195,6 +196,25 @@ const PreferencesDialog: FC<PreferencesDialogProps> = ({ isOpen, onClose, onWall
                             <div className={styles.section}>
                                 <h3>Data Management</h3>
 
+                                <div className={styles.tabContainer}>
+                                    <button
+                                        className={`${styles.tabButton} ${
+                                            activeDataTab === 'backup' ? styles.activeTab : ''
+                                        }`}
+                                        onClick={() => setActiveDataTab('backup')}
+                                    >
+                                        Backup
+                                    </button>
+                                    <button
+                                        className={`${styles.tabButton} ${
+                                            activeDataTab === 'restore' ? styles.activeTab : ''
+                                        }`}
+                                        onClick={() => setActiveDataTab('restore')}
+                                    >
+                                        Restore
+                                    </button>
+                                </div>
+
                                 {error && (
                                     <p className={styles.errorMessage}>
                                         <FontAwesomeIcon icon={faExclamationTriangle} /> {error}
@@ -204,80 +224,86 @@ const PreferencesDialog: FC<PreferencesDialogProps> = ({ isOpen, onClose, onWall
                                     <p className={styles.successMessage}>{successMessage}</p>
                                 )}
 
-                                <div className={styles.settingItem}>
-                                    <h4>Download Data</h4>
-                                    <p className={styles.warningMessage}>
-                                        <FontAwesomeIcon icon={faExclamationTriangle} />
-                                        Important: Remember this passphrase. You will need it to
-                                        restore your data. We cannot recover it for you.
-                                    </p>
-                                    <label htmlFor='downloadPassphrase'>
-                                        Encryption Passphrase:
-                                    </label>
-                                    <div className={styles.inputWithIcon}>
-                                        <FontAwesomeIcon
-                                            icon={faKey}
-                                            className={styles.inputIcon}
-                                        />
-                                        <input
-                                            type='password'
-                                            id='downloadPassphrase'
-                                            value={downloadPassphrase}
-                                            onChange={(e) => setDownloadPassphrase(e.target.value)}
-                                            className={styles.textInput}
-                                            placeholder='Enter a strong passphrase'
-                                        />
+                                {activeDataTab === 'backup' && (
+                                    <div className={styles.settingItem}>
+                                        <p className={styles.warningMessage}>
+                                            <FontAwesomeIcon icon={faExclamationTriangle} />
+                                            Important: Remember this passphrase. You will need it to
+                                            restore your data. We cannot recover it for you.
+                                        </p>
+                                        <label htmlFor='downloadPassphrase'>
+                                            Encryption Passphrase:
+                                        </label>
+                                        <div className={styles.inputWithIcon}>
+                                            <FontAwesomeIcon
+                                                icon={faKey}
+                                                className={styles.inputIcon}
+                                            />
+                                            <input
+                                                type='password'
+                                                id='downloadPassphrase'
+                                                value={downloadPassphrase}
+                                                onChange={(e) =>
+                                                    setDownloadPassphrase(e.target.value)
+                                                }
+                                                className={styles.textInput}
+                                                placeholder='Enter a strong passphrase'
+                                            />
+                                        </div>
+                                        <button
+                                            onClick={handleDownloadData}
+                                            className={`${styles.dialogButton} ${styles.primaryButton}`}
+                                            disabled={!downloadPassphrase}
+                                        >
+                                            <FontAwesomeIcon icon={faDownload} /> Download Encrypted
+                                            Data
+                                        </button>
                                     </div>
-                                    <button
-                                        onClick={handleDownloadData}
-                                        className={`${styles.dialogButton} ${styles.primaryButton}`}
-                                        disabled={!downloadPassphrase}
-                                    >
-                                        <FontAwesomeIcon icon={faDownload} /> Download Encrypted
-                                        Data
-                                    </button>
-                                </div>
+                                )}
 
-                                <div className={styles.settingItem}>
-                                    <h4>Restore Data</h4>
-                                    <p>
-                                        Upload your previously downloaded data file and enter the
-                                        passphrase to restore.
-                                    </p>
-                                    <label htmlFor='restoreFile'>Backup File (.txt):</label>
-                                    <input
-                                        type='file'
-                                        id='restoreFile'
-                                        accept='.txt'
-                                        onChange={handleRestoreFileChange}
-                                        className={styles.fileInput}
-                                        ref={fileInputRef}
-                                    />
-                                    <label htmlFor='restorePassphrase'>
-                                        Decryption Passphrase:
-                                    </label>
-                                    <div className={styles.inputWithIcon}>
-                                        <FontAwesomeIcon
-                                            icon={faKey}
-                                            className={styles.inputIcon}
-                                        />
+                                {activeDataTab === 'restore' && (
+                                    <div className={styles.settingItem}>
+                                        <p className={styles.standardMessage}>
+                                            Upload your previously downloaded data file and enter
+                                            the passphrase to restore.
+                                        </p>
+                                        <label htmlFor='restoreFile'>Backup File (.txt):</label>
                                         <input
-                                            type='password'
-                                            id='restorePassphrase'
-                                            value={restorePassphrase}
-                                            onChange={(e) => setRestorePassphrase(e.target.value)}
-                                            className={styles.textInput}
-                                            placeholder='Enter passphrase for backup'
+                                            type='file'
+                                            id='restoreFile'
+                                            accept='.txt'
+                                            onChange={handleRestoreFileChange}
+                                            className={styles.fileInput}
+                                            ref={fileInputRef}
                                         />
+                                        <label htmlFor='restorePassphrase'>
+                                            Decryption Passphrase:
+                                        </label>
+                                        <div className={styles.inputWithIcon}>
+                                            <FontAwesomeIcon
+                                                icon={faKey}
+                                                className={styles.inputIcon}
+                                            />
+                                            <input
+                                                type='password'
+                                                id='restorePassphrase'
+                                                value={restorePassphrase}
+                                                onChange={(e) =>
+                                                    setRestorePassphrase(e.target.value)
+                                                }
+                                                className={styles.textInput}
+                                                placeholder='Enter passphrase for backup'
+                                            />
+                                        </div>
+                                        <button
+                                            onClick={handleRestoreData}
+                                            className={`${styles.dialogButton} ${styles.primaryButton}`}
+                                            disabled={!restoreFile || !restorePassphrase}
+                                        >
+                                            <FontAwesomeIcon icon={faUpload} /> Restore Data
+                                        </button>
                                     </div>
-                                    <button
-                                        onClick={handleRestoreData}
-                                        className={`${styles.dialogButton} ${styles.primaryButton}`}
-                                        disabled={!restoreFile || !restorePassphrase}
-                                    >
-                                        <FontAwesomeIcon icon={faUpload} /> Restore Data
-                                    </button>
-                                </div>
+                                )}
                             </div>
                         )}
                     </div>
