@@ -231,7 +231,7 @@ const App: FC = () => {
         setProjects(projects.map((p) => (p.id === projectId ? { ...p, title: newTitle } : p)));
     };
 
-    const handleUpdateProjectDefaultTaskColor = (projectId: string, newTaskColor?: string) => {
+    const handleUpdateProjectTaskColor = (projectId: string, newTaskColor?: string) => {
         setProjects(
             projects.map((p) =>
                 p.id === projectId ? { ...p, taskColor: newTaskColor || getRandomPastelColor() } : p
@@ -319,7 +319,11 @@ const App: FC = () => {
                 onOpenPreferences={() => setIsPreferencesOpen(true)}
                 onAddProject={handleAddProject}
             />
-            <main className={styles.mainContentContainer}>
+            <main
+                className={`${styles.mainContentContainer} ${
+                    dataLoaded && projects.length === 0 ? styles.centerContent : ''
+                }`}
+            >
                 {dataLoaded && projects.length === 0 ? (
                     <div className={styles.noProjectsMessage}>
                         No projects available. Click the '+' button to add a new project.
@@ -332,11 +336,11 @@ const App: FC = () => {
                             people={globalPeople} // Changed from availablePeople to globalPeople (state)
                             findOrCreatePerson={handleFindOrCreatePerson} // Added prop
                             onDeleteProject={handleDeleteProject}
-                            onUpdateTitle={handleUpdateProjectTitle}
+                            onUpdateProjectTitle={handleUpdateProjectTitle}
                             onUpdateTask={handleUpdateTask}
                             onAddTask={handleAddTask}
                             onDeleteTask={handleDeleteTask}
-                            onUpdateProjectDefaultTaskColor={handleUpdateProjectDefaultTaskColor}
+                            onUpdateProjectTaskColor={handleUpdateProjectTaskColor}
                         />
                     ))
                 )}

@@ -80,6 +80,12 @@ select {
     box-sizing: border-box;
 }
 
+/* New class for centering content within mainContentContainer */
+.mainContentContainer.centerContent {
+    align-items: center; /* Vertical centering */
+    justify-content: center; /* Horizontal centering */
+}
+
 .mainContent {
     display: flex;
     flex-wrap: wrap; /* Allow project lanes to wrap */
@@ -142,12 +148,27 @@ select {
     box-sizing: border-box;
 }
 
-.centeredMessage {
-    width: 100%;
+/* Added style for the 'No projects available' message */
+.noProjectsMessage {
+    /* display: flex; Removed as parent will center */
+    /* justify-content: center; Removed */
+    /* align-items: center; Removed */
+    /* width: 100%; Removed */
+    /* height: calc(100vh - 100px); Removed */
+
+    /* Card-like styles */
+    padding: 30px; /* Increased padding */
+    background-color: rgba(0, 0, 0, 0.8);
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Slightly more pronounced shadow */
+    border: 1px solid #e0e0e0; /* Light border for definition */
+
+    /* Text styles */
+    font-size: 1.2em; /* Adjusted font size */
+    color: #fff; /* Darker text color */
     text-align: center;
-    padding: 50px;
-    color: #555;
-    font-size: 1.2em;
+    max-width: 350px; /* Max width for the card */
+    width: auto; /* Ensures it takes minimum width up to max-width */
 }
 
 .errorText {
@@ -222,16 +243,4 @@ select {
     border-radius: 4px;
     padding: 10px;
     margin-bottom: 10px;
-}
-
-/* Added style for the 'No projects available' message */
-.noProjectsMessage {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    height: calc(100vh - 100px); /* Adjust based on header/footer or other elements */
-    font-size: 1.5em;
-    color: #888;
-    text-align: center;
 }
