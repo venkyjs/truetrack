@@ -18,8 +18,7 @@ import AirDatepicker from 'air-datepicker';
 import 'air-datepicker/air-datepicker.css';
 import en from 'air-datepicker/locale/en'; // Import English locale
 import { format } from 'date-fns'; // For formatting the date
-import Coloris from '@melloware/coloris'; // Use require and assert type as any
-import '@melloware/coloris/dist/coloris.css';
+import { HexColorPicker } from 'react-colorful';
 // Ensure TooltipStyles.css is imported in a global scope, like App.tsx or main.tsx
 // No need to import 'tippy.js/dist/tippy.css' here if globally imported elsewhere and theme is custom.
 
@@ -92,7 +91,6 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
     const datepickerRefs = useRef<{ [taskId: string]: AirDatepicker<HTMLElement> | null }>({});
 
     const colorPickerRef = useRef<HTMLDivElement>(null);
-    const colorInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         if (taggingPersonTaskId && personNameInput) {
@@ -342,29 +340,8 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
 
     const handleSetProjectTaskColor = (color?: string) => {
         onUpdateProjectTaskColor(project.id, color);
+        setShowColorPicker(false);
     };
-
-    useEffect(() => {
-        Coloris.init();
-        Coloris.setInstance(`.${styles.projectColorPickerInput}`, {
-            themeMode: 'dark', // Or 'light'
-            swatches: PREDEFINED_TASK_COLORS,
-            format: 'hex',
-            alpha: false,
-            onChange: (color: string) => {
-                handleSetProjectTaskColor(color);
-                setShowColorPicker(false);
-            }
-        });
-
-        // Clean up Coloris instance when component unmounts
-        return () => {
-            // There isn't a direct 'destroy' or 'cleanup' for specific instances
-            // in the same way as initialization for a class.
-            // Coloris.init() is global. If issues arise, we might need to
-            // manage the input field directly or check Coloris documentation for cleanup.
-        };
-    }, [project.id, handleSetProjectTaskColor]); // project.id ensures re-init if project changes, though unlikely needed for this picker
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -380,17 +357,6 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
-    }, [showColorPicker]);
-
-    useEffect(() => {
-        if (showColorPicker && colorInputRef.current) {
-            // Small delay to ensure the input is rendered and Coloris is initialized
-            setTimeout(() => {
-                if (colorInputRef.current) {
-                    colorInputRef.current.click();
-                }
-            }, 50);
-        }
     }, [showColorPicker]);
 
     const toggleShowCompleted = (taskId: string) => {
@@ -495,15 +461,25 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
                                         <FontAwesomeIcon icon={faPalette} />
                                     </button>
                                     {showColorPicker && (
-                                        <input
-                                            ref={colorInputRef}
-                                            type='text'
-                                            className={styles.projectColorPickerInput}
-                                            data-coloris
-                                            value={project.taskColor || ''}
-                                            readOnly
-                                            id={`colorPicker-${project.id}`}
-                                        />
+                                        <div className={styles.colorPickerPopover}>
+                                            <HexColorPicker
+                                                color={project.taskColor || '#cccccc'}
+                                                onChange={handleSetProjectTaskColor}
+                                            />
+                                            <div className={styles.presetColors}>
+                                                {PREDEFINED_TASK_COLORS.map((color) => (
+                                                    <button
+                                                        key={color}
+                                                        className={styles.presetColorBtn}
+                                                        style={{ backgroundColor: color }}
+                                                        onClick={() =>
+                                                            handleSetProjectTaskColor(color)
+                                                        }
+                                                        title={color}
+                                                    />
+                                                ))}
+                                            </div>
+                                        </div>
                                     )}
                                 </div>
                             </Tippy>
