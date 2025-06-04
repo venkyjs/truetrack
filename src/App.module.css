@@ -65,10 +65,25 @@ select {
 }
 
 .app {
+    /* text-align: center; */ /* Commented out or remove if not needed for overall app centering */
+}
+
+.mainContentContainer {
     display: flex;
-    flex-direction: column; /* Ensure header is above main content */
-    min-height: 100vh;
-    /* background-color: #f4f7f6; Remove this or ensure it works with wallpaper */
+    flex-direction: row;
+    overflow-x: auto; /* Allows horizontal scrolling for lanes */
+    overflow-y: hidden; /* Prevents vertical scrolling on the container itself */
+    height: calc(100vh - 60px); /* Assuming AppHeader is 60px. Adjust as needed. */
+    padding: 20px;
+    gap: 20px; /* Spacing between project lanes */
+    align-items: flex-start; /* Align lanes to the top */
+    box-sizing: border-box;
+}
+
+/* New class for centering content within mainContentContainer */
+.mainContentContainer.centerContent {
+    align-items: center; /* Vertical centering */
+    justify-content: center; /* Horizontal centering */
 }
 
 .mainContent {
@@ -133,12 +148,27 @@ select {
     box-sizing: border-box;
 }
 
-.centeredMessage {
-    width: 100%;
+/* Added style for the 'No projects available' message */
+.noProjectsMessage {
+    /* display: flex; Removed as parent will center */
+    /* justify-content: center; Removed */
+    /* align-items: center; Removed */
+    /* width: 100%; Removed */
+    /* height: calc(100vh - 100px); Removed */
+
+    /* Card-like styles */
+    padding: 30px; /* Increased padding */
+    background-color: rgba(0, 0, 0, 0.8);
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Slightly more pronounced shadow */
+    border: 1px solid #e0e0e0; /* Light border for definition */
+
+    /* Text styles */
+    font-size: 1.2em; /* Adjusted font size */
+    color: #fff; /* Darker text color */
     text-align: center;
-    padding: 50px;
-    color: #555;
-    font-size: 1.2em;
+    max-width: 350px; /* Max width for the card */
+    width: auto; /* Ensures it takes minimum width up to max-width */
 }
 
 .errorText {

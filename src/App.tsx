@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import type { FC } from 'react';
 // Import global types
 import type { Project, Task as ProjectTask, Person } from './types';
+import { idbGet, idbSet, idbRemove } from './utils/indexedDB'; // Added import
 
 import ProjectLane from './components/ProjectLane';
 import styles from './App.module.css';
@@ -81,64 +82,135 @@ const initialProjectsData: Project[] = [
     }
 ];
 
-export const availablePeople: Person[] = [...initialGlobalPeople];
-
 const App: FC = () => {
-    const [projects, setProjects] = useState<Project[]>(() => {
-        const savedProjects = localStorage.getItem('projectsData');
-        try {
-            const parsedProjects = savedProjects ? JSON.parse(savedProjects) : initialProjectsData;
-            return parsedProjects.map((p: Project) => ({
-                ...p,
-                taskColor: p.taskColor || getRandomPastelColor(),
-                tasks: p.tasks.map((t) => ({
-                    ...t,
-                    reminder: t.reminder ? new Date(t.reminder).toISOString() : undefined
-                }))
-            }));
-        } catch (error) {
-            console.error('Failed to parse projectsData from localStorage', error);
-            return initialProjectsData.map((p) => ({
-                ...p,
-                taskColor: p.taskColor || getRandomPastelColor(),
-                tasks: p.tasks.map((t) => ({
-                    ...t,
-                    reminder: t.reminder ? new Date(t.reminder).toISOString() : undefined
-                }))
-            }));
-        }
-    });
+    const [projects, setProjects] = useState<Project[]>([]);
+    const [nextProjectId, setNextProjectId] = useState<number>(1);
+    const [isPreferencesOpen, setIsPreferencesOpen] = useState<boolean>(false);
+    const [appWallpaper, setAppWallpaper] = useState<string | null>(null);
+    const [dataLoaded, setDataLoaded] = useState(false);
+    const [initialLoadHasProjects, setInitialLoadHasProjects] = useState<boolean>(false);
+    const [globalPeople, setGlobalPeople] = useState<Person[]>(initialGlobalPeople); // New state for people
 
-    const [nextProjectId, setNextProjectId] = useState<number>(() => {
-        if (projects.length === 0) return 1;
+    // Load initial data from IndexedDB
+    useEffect(() => {
+        const loadData = async () => {
+            try {
+                const savedProjects = await idbGet<Project[]>('projectsData');
+                const wallpaper = await idbGet<string>('appWallpaper');
+                const savedPeople = await idbGet<Person[]>('globalPeopleData'); // Load people
+
+                if (savedProjects && savedProjects.length > 0) {
+                    // Check if savedProjects is not null and not empty
+                    const parsedProjects = savedProjects.map((p: Project) => ({
+                        ...p,
+                        taskColor: p.taskColor || getRandomPastelColor(),
+                        tasks: p.tasks.map((t) => ({
+                            ...t,
+                            reminder: t.reminder ? new Date(t.reminder).toISOString() : undefined
+                        }))
+                    }));
+                    setProjects(parsedProjects);
+                    setInitialLoadHasProjects(true); // Mark that initial load had projects
+                } else {
+                    // If no saved projects or empty array, set projects to empty
+                    // and initialLoadHasProjects to false.
+                    // We won't use initialProjectsData here anymore.
+                    setProjects([]);
+                    setInitialLoadHasProjects(false);
+                }
+
+                if (savedPeople && savedPeople.length > 0) {
+                    // If people are saved, use them
+                    setGlobalPeople(savedPeople);
+                } else {
+                    // Otherwise, use initial (and save them for next time if not empty)
+                    if (initialGlobalPeople.length > 0) {
+                        // No need to setGlobalPeople again if it's already initialGlobalPeople
+                        // but we should save it if it's the first run with people
+                        await idbSet('globalPeopleData', initialGlobalPeople);
+                    }
+                    // If initialGlobalPeople is also empty, globalPeople remains empty
+                }
+
+                if (wallpaper) {
+                    setAppWallpaper(wallpaper);
+                }
+            } catch (error) {
+                console.error('Failed to load data from IndexedDB', error);
+                // Fallback to empty state if IDB fails
+                setProjects([]);
+                setInitialLoadHasProjects(false);
+            } finally {
+                setDataLoaded(true);
+            }
+        };
+        loadData();
+    }, []);
+
+    // Effect to derive nextProjectId from projects
+    useEffect(() => {
+        if (!dataLoaded) return; // Ensure data has been loaded or attempted
+
+        if (projects.length === 0) {
+            setNextProjectId(1);
+            return;
+        }
         const ids = projects.map((p) => parseInt(p.id.split('-')[1] || '0', 10));
         const numericIds = ids.filter((id) => !isNaN(id));
-        if (numericIds.length === 0) return 1;
+        if (numericIds.length === 0) {
+            setNextProjectId(1);
+            return;
+        }
         const maxId = Math.max(...numericIds);
-        return maxId < 0 ? 1 : maxId + 1;
-    });
+        setNextProjectId(maxId < 0 ? 1 : maxId + 1); // Ensure nextId is at least 1
+    }, [projects, dataLoaded]);
 
-    const [isPreferencesOpen, setIsPreferencesOpen] = useState<boolean>(false);
-    const [appWallpaper, setAppWallpaper] = useState<string | null>(() => {
-        return localStorage.getItem('appWallpaper') || null;
-    });
-
+    // Save projects to IndexedDB
     useEffect(() => {
-        localStorage.setItem('projectsData', JSON.stringify(projects));
-    }, [projects]);
+        if (dataLoaded) {
+            // Check only dataLoaded
+            if (projects.length > 0) {
+                idbSet('projectsData', projects).catch((error) =>
+                    console.error('Failed to save projects to IndexedDB', error)
+                );
+            } else {
+                // If projects array becomes empty AFTER initial load
+                idbRemove('projectsData').catch((error) =>
+                    console.error('Failed to remove projectsData from IndexedDB', error)
+                );
+            }
+            // Save globalPeople to IndexedDB whenever it changes after initial load
+            if (globalPeople.length > 0) {
+                idbSet('globalPeopleData', globalPeople).catch((error) =>
+                    console.error('Failed to save globalPeople to IndexedDB', error)
+                );
+            } else {
+                idbRemove('globalPeopleData').catch((error) =>
+                    console.error('Failed to remove globalPeopleData from IndexedDB', error)
+                );
+            }
+        }
+    }, [projects, globalPeople, dataLoaded]);
 
+    // Save wallpaper and update body style
     useEffect(() => {
+        if (!dataLoaded) return; // Don't run on initial load before wallpaper is fetched
+
         if (appWallpaper) {
-            localStorage.setItem('appWallpaper', appWallpaper);
+            idbSet('appWallpaper', appWallpaper).catch((error) =>
+                console.error('Failed to save appWallpaper to IndexedDB', error)
+            );
             document.body.style.backgroundImage = `url(${appWallpaper})`;
             document.body.style.backgroundPosition = 'center';
             document.body.style.backgroundSize = 'cover';
             document.body.style.backgroundRepeat = 'no-repeat';
         } else {
-            localStorage.removeItem('appWallpaper');
+            idbRemove('appWallpaper').catch((error) =>
+                console.error('Failed to remove appWallpaper from IndexedDB', error)
+            );
             document.body.style.backgroundImage = '';
         }
-    }, [appWallpaper]);
+    }, [appWallpaper, dataLoaded]);
 
     const handleAddProject = () => {
         const newProject: Project = {
@@ -148,7 +220,7 @@ const App: FC = () => {
             taskColor: getRandomPastelColor()
         };
         setProjects([...projects, newProject]);
-        setNextProjectId((prevId) => prevId + 1);
+        // nextProjectId will update via its own useEffect
     };
 
     const handleDeleteProject = (projectId: string) => {
@@ -159,7 +231,7 @@ const App: FC = () => {
         setProjects(projects.map((p) => (p.id === projectId ? { ...p, title: newTitle } : p)));
     };
 
-    const handleUpdateProjectDefaultTaskColor = (projectId: string, newTaskColor?: string) => {
+    const handleUpdateProjectTaskColor = (projectId: string, newTaskColor?: string) => {
         setProjects(
             projects.map((p) =>
                 p.id === projectId ? { ...p, taskColor: newTaskColor || getRandomPastelColor() } : p
@@ -222,46 +294,63 @@ const App: FC = () => {
         setAppWallpaper(wallpaper);
     };
 
+    // New function to find or create a person
+    const handleFindOrCreatePerson = (name: string): string => {
+        const Tname = name.trim();
+        const existingPerson = globalPeople.find(
+            (p) => p.name.toLowerCase() === Tname.toLowerCase()
+        );
+        if (existingPerson) {
+            return existingPerson.id;
+        }
+        const newPerson: Person = {
+            id: `person-${crypto.randomUUID()}`,
+            name: Tname,
+            initials: Tname.substring(0, 2).toUpperCase() // Basic initials logic
+        };
+        setGlobalPeople((prevPeople) => [...prevPeople, newPerson]);
+        // The useEffect for globalPeople will handle saving to IDB
+        return newPerson.id;
+    };
+
     return (
-        <div className={styles.app}>
+        <>
             <AppHeader
                 onOpenPreferences={() => setIsPreferencesOpen(true)}
-                onAddProject={handleAddProject} // Pass handleAddProject
+                onAddProject={handleAddProject}
             />
-            <main className={styles.mainContent}>
-                {projects.map((project) => (
-                    <ProjectLane
-                        key={project.id}
-                        project={project}
-                        people={availablePeople}
-                        findOrCreatePerson={(name: string) => {
-                            const existing = availablePeople.find(
-                                (p) => p.name.toLowerCase() === name.toLowerCase()
-                            );
-                            if (existing) return existing.id;
-                            const newPerson: Person = {
-                                id: crypto.randomUUID(),
-                                name,
-                                initials: name.substring(0, 2).toUpperCase()
-                            };
-                            availablePeople.push(newPerson);
-                            return newPerson.id;
-                        }}
-                        onDeleteProject={handleDeleteProject}
-                        onUpdateProjectTitle={handleUpdateProjectTitle}
-                        onUpdateProjectTaskColor={handleUpdateProjectDefaultTaskColor}
-                        onAddTask={handleAddTask}
-                        onUpdateTask={handleUpdateTask}
-                        onDeleteTask={handleDeleteTask}
-                    />
-                ))}
+            <main
+                className={`${styles.mainContentContainer} ${
+                    dataLoaded && projects.length === 0 ? styles.centerContent : ''
+                }`}
+            >
+                {dataLoaded && projects.length === 0 ? (
+                    <div className={styles.noProjectsMessage}>
+                        No projects available. Click the '+' button to add a new project.
+                    </div>
+                ) : (
+                    projects.map((project) => (
+                        <ProjectLane
+                            key={project.id}
+                            project={project}
+                            people={globalPeople} // Changed from availablePeople to globalPeople (state)
+                            findOrCreatePerson={handleFindOrCreatePerson} // Added prop
+                            onDeleteProject={handleDeleteProject}
+                            onUpdateProjectTitle={handleUpdateProjectTitle}
+                            onUpdateTask={handleUpdateTask}
+                            onAddTask={handleAddTask}
+                            onDeleteTask={handleDeleteTask}
+                            onUpdateProjectTaskColor={handleUpdateProjectTaskColor}
+                        />
+                    ))
+                )}
             </main>
             <PreferencesDialog
                 isOpen={isPreferencesOpen}
                 onClose={() => setIsPreferencesOpen(false)}
                 onWallpaperChange={handleWallpaperChange}
             />
-        </div>
+        </>
     );
 };
 
