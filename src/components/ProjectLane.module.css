@@ -806,11 +806,6 @@
 }
 
 .colorPickerPopover {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    z-index: 10;
-    margin-top: 5px;
     background-color: #333;
     border: 1px solid #555;
     border-radius: 4px;

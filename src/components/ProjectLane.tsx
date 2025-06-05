@@ -95,7 +95,9 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
     const calendarButtonRef = useRef<HTMLButtonElement>(null);
     const calendarRef = useRef<HTMLDivElement>(null);
 
-    const colorPickerRef = useRef<HTMLDivElement>(null);
+    const colorPickerPopoverRef = useRef<HTMLDivElement>(null);
+    const colorPickerButtonRef = useRef<HTMLButtonElement>(null);
+    const [colorPickerPosition, setColorPickerPosition] = useState({ top: 0, left: 0 });
 
     useEffect(() => {
         if (taggingPersonTaskId && personNameInput) {
@@ -343,7 +345,12 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
-            if (colorPickerRef.current && !colorPickerRef.current.contains(event.target as Node)) {
+            if (
+                colorPickerPopoverRef.current &&
+                !colorPickerPopoverRef.current.contains(event.target as Node) &&
+                colorPickerButtonRef.current &&
+                !colorPickerButtonRef.current.contains(event.target as Node)
+            ) {
                 setShowColorPicker(false);
             }
         };
@@ -472,39 +479,24 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
                                 </button>
                             </Tippy>
                             <Tippy content='Change Project Color' placement='top' theme='material'>
-                                <div className={styles.colorPickerContainer} ref={colorPickerRef}>
+                                <div className={styles.colorPickerContainer}>
                                     <button
-                                        onClick={() => setShowColorPicker(!showColorPicker)}
+                                        ref={colorPickerButtonRef}
+                                        onClick={() => {
+                                            if (colorPickerButtonRef.current) {
+                                                const rect =
+                                                    colorPickerButtonRef.current.getBoundingClientRect();
+                                                setColorPickerPosition({
+                                                    top: rect.bottom + window.scrollY + 5,
+                                                    left: rect.left + window.scrollX
+                                                });
+                                            }
+                                            setShowColorPicker(!showColorPicker);
+                                        }}
                                         className={styles.editProjectBtn}
                                     >
                                         <FontAwesomeIcon icon={faPalette} />
                                     </button>
-                                    {showColorPicker && (
-                                        <div className={styles.colorPickerPopover}>
-                                            <HexColorPicker
-                                                color={project.taskColor || '#ffffff'}
-                                                onChange={handleSetProjectTaskColor}
-                                            />
-                                            <div className={styles.predefinedColors}>
-                                                {PREDEFINED_TASK_COLORS.map((color) => (
-                                                    <button
-                                                        key={color}
-                                                        style={{ backgroundColor: color }}
-                                                        className={styles.colorOption}
-                                                        onClick={() =>
-                                                            handleSetProjectTaskColor(color)
-                                                        }
-                                                    />
-                                                ))}
-                                            </div>
-                                            <button
-                                                className={styles.clearColorButton}
-                                                onClick={() => handleSetProjectTaskColor(undefined)}
-                                            >
-                                                Clear Color
-                                            </button>
-                                        </div>
-                                    )}
                                 </div>
                             </Tippy>
                             <Tippy content='Delete Project' placement='top' theme='material'>
@@ -899,6 +891,41 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
                     <p className={styles.noTasksMessage}>No tasks yet. Add one below!</p>
                 )}
             </div>
+            {showColorPicker &&
+                ReactDOM.createPortal(
+                    <div
+                        ref={colorPickerPopoverRef}
+                        style={{
+                            position: 'absolute',
+                            top: `${colorPickerPosition.top}px`,
+                            left: `${colorPickerPosition.left}px`,
+                            zIndex: 1060
+                        }}
+                        className={styles.colorPickerPopover}
+                    >
+                        <HexColorPicker
+                            color={project.taskColor || '#ffffff'}
+                            onChange={handleSetProjectTaskColor}
+                        />
+                        <div className={styles.predefinedColors}>
+                            {PREDEFINED_TASK_COLORS.map((color) => (
+                                <button
+                                    key={color}
+                                    style={{ backgroundColor: color }}
+                                    className={styles.colorOption}
+                                    onClick={() => handleSetProjectTaskColor(color)}
+                                />
+                            ))}
+                        </div>
+                        <button
+                            className={styles.clearColorButton}
+                            onClick={() => handleSetProjectTaskColor(undefined)}
+                        >
+                            Clear Color
+                        </button>
+                    </div>,
+                    document.body
+                )}
             {calendarOpenForTaskId &&
                 ReactDOM.createPortal(
                     <div
