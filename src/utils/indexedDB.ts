@@ -1,10 +1,21 @@
 const DB_NAME = 'ProjectPulseDB';
 const DB_VERSION = 1;
 
-interface MyDB extends IDBDatabase {
-    // Define your object stores here if needed for type safety,
-    // though direct interaction is usually through transactions.
-}
+// Define the database schema
+// interface MyDB extends IDBDatabase {
+//   projects: {
+//     key: string;
+//     value: any;
+//   };
+//   appWallpaper: {
+//     key: string;
+//     value: string;
+//   };
+//   globalPeopleData: {
+//     key: string;
+//     value: any;
+//   };
+// }
 
 let db: IDBDatabase | null = null;
 

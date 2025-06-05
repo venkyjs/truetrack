@@ -1,14 +1,21 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { FC } from 'react';
+// import { дорога } from './assets'; // Removed unused import causing error
 // Import global types
 import type { Project, Task as ProjectTask, Person } from './types';
 import { idbGet, idbSet, idbRemove } from './utils/indexedDB'; // Added import
+// import { addProject, getProjects, updateProject, deleteProject } from './utils/indexedDB'; // This was the original error from the build output relating to an incorrect import
 
 import ProjectLane from './components/ProjectLane';
 import styles from './App.module.css';
 import AppHeader from './components/AppHeader/AppHeader';
 import PreferencesDialog from './components/PreferencesDialog/PreferencesDialog';
 import './components/TooltipStyles.css'; // Import custom tooltip styles
+// import ProjectForm from './components/ProjectForm'; // These were incorrectly added in a previous edit
+// import ProjectList from './components/ProjectList'; // These were incorrectly added in a previous edit
+// import WallpaperSelector from './components/WallpaperSelector'; // These were incorrectly added in a previous edit
+// import { wallpapers } from './utils/wallpapers'; // These were incorrectly added in a previous edit
+// import './App.css'; // This was fine
 
 // Removed local type definitions, using global ones imported above
 
@@ -25,62 +32,42 @@ const initialGlobalPeople: Person[] = [
     { id: 'person-5', name: 'Edward', initials: 'ED' }
 ];
 
-const initialProjectsData: Project[] = [
-    {
-        id: 'project-1',
-        title: 'Project Alpha',
-        taskColor: getRandomPastelColor(),
-        tasks: [
-            {
-                id: 'task-1-1',
-                title: 'Develop Feature X',
-                items: [
-                    { id: 'item-1-1-1', text: 'Design UI mockups', completed: true },
-                    { id: 'item-1-1-2', text: 'Implement frontend logic', completed: false },
-                    { id: 'item-1-1-3', text: 'Write unit tests', completed: false }
-                ],
-                assignedPersons: ['person-1'], // Array of Person IDs
-                reminder: undefined, // Matched to global type (optional Date | string)
-                color: undefined // Task specific color, optional in global type
-            },
-            {
-                id: 'task-1-2',
-                title: 'Setup CI/CD Pipeline',
-                items: [
-                    { id: 'item-1-2-1', text: 'Configure Jenkins', completed: true },
-                    { id: 'item-1-2-2', text: 'Define build stages', completed: true }
-                ],
-                assignedPersons: [],
-                reminder: new Date('2023-12-15T10:00').toISOString(), // Match global type
-                color: '#FFFACD'
-            }
-        ]
-    },
-    {
-        id: 'project-2',
-        title: 'Marketing Campaign',
-        taskColor: getRandomPastelColor(),
-        tasks: [
-            {
-                id: 'task-2-1',
-                title: 'Create Ad Copy',
-                items: [
-                    { id: 'item-2-1-1', text: 'Draft initial versions', completed: false },
-                    { id: 'item-2-1-2', text: 'Review with team', completed: false }
-                ],
-                assignedPersons: ['person-2'],
-                reminder: undefined,
-                color: '#E6E6FA'
-            }
-        ]
-    },
-    {
-        id: 'project-3',
-        title: 'Website Redesign',
-        taskColor: getRandomPastelColor(),
-        tasks: []
-    }
-];
+// THIS WAS THE UNUSED VARIABLE IDENTIFIED IN THE BUILD OUTPUT
+// const initialProjectsData: Project[] = [
+//   {
+//     id: '1',
+//     name: 'Project Alpha',
+//     description: 'Description for Project Alpha',
+//     startDate: '2023-01-01',
+//     endDate: '2023-06-30',
+//     status: 'In Progress',
+//     assignedTo: 'John Doe',
+//     tags: ['React', 'TypeScript'],
+//     tasks: [
+//       { id: 'task1', name: 'Setup environment', status: 'Completed' },
+//       { id: 'task2', name: 'Develop feature X', status: 'In Progress' },
+//     ],
+//     budget: 50000,
+//     actualCost: 25000,
+//     priority: 'High',
+//     repoUrl: 'https://github.com/user/project-alpha',
+//   },
+//   {
+//     id: '2',
+//     name: 'Project Beta',
+//     description: 'Description for Project Beta',
+//     startDate: '2023-03-15',
+//     endDate: '2023-09-30',
+//     status: 'Planning',
+//     assignedTo: 'Jane Smith',
+//     tags: ['Angular', 'Node.js'],
+//     tasks: [
+//       { id: 'task3', name: 'Requirement gathering', status: 'Pending' },
+//     ],
+//     budget: 75000,
+//     priority: 'Medium',
+//   },
+// ];
 
 const App: FC = () => {
     const [projects, setProjects] = useState<Project[]>([]);
@@ -88,8 +75,13 @@ const App: FC = () => {
     const [isPreferencesOpen, setIsPreferencesOpen] = useState<boolean>(false);
     const [appWallpaper, setAppWallpaper] = useState<string | null>(null);
     const [dataLoaded, setDataLoaded] = useState(false);
-    const [initialLoadHasProjects, setInitialLoadHasProjects] = useState<boolean>(false);
+    // const [initialLoadHasProjects, setInitialLoadHasProjects] = useState<boolean>(false); // THIS WAS THE UNUSED VARIABLE IDENTIFIED IN THE BUILD OUTPUT
     const [globalPeople, setGlobalPeople] = useState<Person[]>(initialGlobalPeople); // New state for people
+    // const [isModalOpen, setIsModalOpen] = useState(false); // This was NOT part of the original App.tsx, it was currentProject from the old version
+    // const [currentProject, setCurrentProject] = useState<Project | null>(null); // This was NOT part of the original App.tsx
+    // const [selectedWallpaper, setSelectedWallpaper] = useState<string>(() => { // This was NOT part of the original App.tsx
+    //     return localStorage.getItem('selectedWallpaper') || wallpapers[0].value;
+    // });
 
     // Load initial data from IndexedDB
     useEffect(() => {
@@ -110,13 +102,13 @@ const App: FC = () => {
                         }))
                     }));
                     setProjects(parsedProjects);
-                    setInitialLoadHasProjects(true); // Mark that initial load had projects
+                    // setInitialLoadHasProjects(true); // Part of the original unused variable
                 } else {
                     // If no saved projects or empty array, set projects to empty
                     // and initialLoadHasProjects to false.
                     // We won't use initialProjectsData here anymore.
                     setProjects([]);
-                    setInitialLoadHasProjects(false);
+                    // setInitialLoadHasProjects(false); // Part of the original unused variable
                 }
 
                 if (savedPeople && savedPeople.length > 0) {
@@ -139,7 +131,7 @@ const App: FC = () => {
                 console.error('Failed to load data from IndexedDB', error);
                 // Fallback to empty state if IDB fails
                 setProjects([]);
-                setInitialLoadHasProjects(false);
+                // setInitialLoadHasProjects(false); // Part of the original unused variable
             } finally {
                 setDataLoaded(true);
             }

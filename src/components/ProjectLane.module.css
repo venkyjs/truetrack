@@ -575,41 +575,6 @@
     position: relative; /* For palette positioning */
 }
 
-.taskColorPickerButton {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    border: 1px solid #ccc;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1em; /* For emoji */
-    padding: 0;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-}
-
-.taskColorPickerButton:hover {
-    border-color: #999;
-}
-
-.colorPalette {
-    position: absolute;
-    bottom: 100%; /* Position above the button */
-    left: 0;
-    background-color: white;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    padding: 8px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    width: 160px; /* Adjust as needed for number of colors */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
-    z-index: 10; /* Ensure it's above other elements */
-    margin-bottom: 5px; /* Space from the button */
-}
-
 .colorOption {
     width: 24px;
     height: 24px;
@@ -624,66 +589,12 @@
     transform: scale(1.1);
 }
 
-.noColorOption {
-    background-color: #f0f0f0;
-    color: #333;
-    font-size: 1.1em;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.projectColorPickerButton {
-    background-color: transparent;
-    color: #fff; /* Assuming white text for contrast, adjust if needed */
-    padding: 0;
-    font-size: 0.9em;
-    cursor: pointer;
-}
-
-.projectColorPickerButton:hover {
-    background-color: rgba(255, 255, 255, 0.1); /* Subtle hover effect */
-}
-
-.projectColorPickerInput {
-    background: none;
-    border: none;
-    color: #fff;
-    font-size: 0.9em;
-    cursor: pointer;
-    padding: 2px 4px;
-    border-radius: 3px;
-    line-height: 1;
-    opacity: 0.7;
-    transition: opacity 0.2s ease;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    margin-top: 4px;
-    z-index: 10;
-    background-color: rgba(0, 0, 0, 0.8);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.projectColorPickerInput:hover {
-    opacity: 1;
-}
-
-.cancelColorOption {
-    background-color: #f0f0f0; /* Light grey, distinct from colors */
-    color: #333;
-    border: 1px solid #ccc;
-}
-
-.cancelColorOption:hover {
-    background-color: #e0e0e0;
-}
-
 .mainActionsRow {
     display: flex;
     justify-content: space-between;
     align-items: center;
     width: 100%;
+    gap: 5px;
 }
 
 .avatarsDisplayContainer {
@@ -709,10 +620,144 @@
 }
 
 .datepickerContainer {
-    /* The AirDatepicker will create its own element with class \'air-datepicker-global-container\' */
-    /* This container is mostly a placeholder for the ref, but can be used for positioning if needed */
-    position: relative; /* Allows absolute positioning of the datepicker if it doesn't do so itself */
-    z-index: 20; /* Ensure picker is above other elements in the card */
+    position: relative;
+    z-index: 99999;
+    isolation: isolate;
+    display: flex;
+    align-items: center;
+}
+
+/* Custom styles for react-datetime-picker to fix visibility and z-index issues */
+.datepickerContainer :global(.react-datetime-picker) {
+    z-index: 99999 !important;
+    position: relative;
+    line-height: 16px !important;
+}
+
+.datepickerContainer :global(.react-datetime-picker__wrapper) {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background: white;
+    z-index: 99999 !important;
+    padding: 4px 6px !important;
+    min-height: 24px !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+.datepickerContainer :global(.react-datetime-picker__inputGroup) {
+    background: white;
+    color: #333;
+    font-size: 11px !important;
+    line-height: 16px !important;
+    display: flex !important;
+    align-items: center !important;
+    min-height: 16px !important;
+}
+
+.datepickerContainer :global(.react-datetime-picker__inputGroup__input) {
+    color: #333 !important;
+    background: white !important;
+    font-size: 11px !important;
+    padding: 0 !important;
+    border: none !important;
+    line-height: 16px !important;
+    min-height: 16px !important;
+    margin-left: 0 !important;
+}
+
+.datepickerContainer :global(.react-datetime-picker__inputGroup__divider) {
+    color: #333 !important;
+    font-size: 11px !important;
+    line-height: 16px !important;
+}
+
+.datepickerContainer :global(.react-datetime-picker__button) {
+    padding: 2px !important;
+    background: white !important;
+    border: none !important;
+    line-height: 16px !important;
+}
+
+/* Global Calendar Styles */
+:global(.react-calendar) {
+    z-index: 999999 !important;
+    background: white !important;
+    border: 1px solid #ccc !important;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) !important;
+}
+
+:global(.react-calendar__tile) {
+    background: white !important;
+    color: #333 !important;
+}
+
+:global(.react-calendar__tile:hover) {
+    background: #e6f7ff !important;
+    color: #333 !important;
+}
+
+:global(.react-calendar__tile--active) {
+    background: #1890ff !important;
+    color: white !important;
+}
+
+:global(.react-calendar__tile--now) {
+    background: #ffec3d !important;
+    color: #333 !important;
+}
+
+:global(.react-calendar__tile:disabled) {
+    color: #ccc !important;
+}
+
+:global(.react-calendar__month-view__weekdays) {
+    background: #f5f5f5 !important;
+}
+
+:global(.react-calendar__month-view__weekdays__weekday) {
+    color: #333 !important;
+    font-weight: bold !important;
+    text-decoration: none;
+}
+
+:global(.react-calendar__navigation) {
+    background: white !important;
+}
+
+:global(.react-calendar__navigation button) {
+    color: #333 !important;
+    background: white !important;
+}
+
+:global(.react-calendar__navigation button:hover) {
+    background: #e6f7ff !important;
+}
+
+:global(.react-clock) {
+    z-index: 999999 !important;
+    background: white !important;
+    border: 1px solid #ccc !important;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Ensure the calendar container itself has highest priority and proper styling */
+:global(.react-datetime-picker__calendar) {
+    z-index: 10 !important; /* Maximum z-index value */
+    position: absolute !important;
+    background: white !important;
+    border: 1px solid #ccc !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3) !important;
+    transform: translateZ(0) !important; /* Force hardware acceleration */
+}
+
+:global(.react-datetime-picker__clock) {
+    z-index: 2147483647 !important; /* Maximum z-index value */
+    position: absolute !important;
+    background: white !important;
+    border: 1px solid #ccc !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3) !important;
+    transform: translateZ(0) !important; /* Force hardware acceleration */
 }
 
 .reminderText {
@@ -742,37 +787,54 @@
 }
 
 .clearReminderBtnInline:hover {
-    color: #ef4444; /* Match existing clearReminderBtn */
+    color: #ff4d4f; /* Match existing clearReminderBtn */
 }
 
-/* Styles for AirDatepicker custom buttons */
-/* The datepicker appends its UI to the body by default, so these classes are global-like */
-/* If you want to scope them, you might need to target them within .air-datepicker-global-container */
-
-:global(.air-datepicker-button-apply) {
-    /* Example: Make it green */
-    background-color: #52c41a !important; /* Important to override default if needed */
-    color: white !important;
+.calendarToggleBtn {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 1.1em;
+    cursor: pointer;
+    padding: 0 5px;
+    margin-left: 5px;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
 }
 
-:global(.air-datepicker-button-apply:hover) {
-    background-color: #389e0d !important;
+.calendarToggleBtn:hover {
+    opacity: 1;
 }
 
-:global(.air-datepicker-button-close) {
-    /* Example: Make it grey */
-    background-color: #f0f0f0 !important;
-    color: #333 !important;
-    border: 1px solid #ccc !important;
+.colorPickerPopover {
+    background-color: #333;
+    border: 1px solid #555;
+    border-radius: 4px;
+    padding: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
-:global(.air-datepicker-button-close:hover) {
-    background-color: #e0e0e0 !important;
+.predefinedColors {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+    border-bottom: 1px solid #555;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
 }
 
-.projectColorPickerInput:hover {
-    border-color: #999;
-    background-color: rgba(255, 255, 255, 0.9);
+.clearColorButton {
+    width: 100%;
+    text-align: center;
+    background-color: #555;
+    color: #fff;
+    border: none;
+    padding: 5px;
+    border-radius: 3px;
+    cursor: pointer;
 }
 
-/* Remove the ::before pseudo-element since we're using FontAwesome icon now */
+.clearColorButton:hover {
+    background-color: #666;
+}

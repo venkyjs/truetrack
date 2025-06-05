@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
+import ReactDOM from 'react-dom';
 import type { Project, Task, TaskItem, Person } from '../types'; // Assuming types.ts is in the same src folder
 import styles from './ProjectLane.module.css'; // Use CSS module import
 import classNames from 'classnames';
@@ -11,17 +12,17 @@ import {
     faPalette,
     faTag,
     faBell,
-    faBellSlash
+    faBellSlash,
+    faCalendarAlt
 } from '@fortawesome/free-solid-svg-icons';
 import Tippy from '@tippyjs/react';
-import AirDatepicker from 'air-datepicker';
-import 'air-datepicker/air-datepicker.css';
-import en from 'air-datepicker/locale/en'; // Import English locale
+import DateTimePicker from 'react-datetime-picker';
+import 'react-datetime-picker/dist/DateTimePicker.css';
+import { Calendar } from 'react-calendar';
+import 'react-calendar/dist/Calendar.css';
+import 'react-clock/dist/Clock.css';
 import { format } from 'date-fns'; // For formatting the date
-import Coloris from '@melloware/coloris'; // Use require and assert type as any
-import '@melloware/coloris/dist/coloris.css';
-// Ensure TooltipStyles.css is imported in a global scope, like App.tsx or main.tsx
-// No need to import 'tippy.js/dist/tippy.css' here if globally imported elsewhere and theme is custom.
+import { HexColorPicker } from 'react-colorful';
 
 interface ProjectLaneProps {
     project: Project;
@@ -89,10 +90,14 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
 
     const [showColorPicker, setShowColorPicker] = useState(false);
 
-    const datepickerRefs = useRef<{ [taskId: string]: AirDatepicker<HTMLElement> | null }>({});
+    const [calendarOpenForTaskId, setCalendarOpenForTaskId] = useState<string | null>(null);
+    const [calendarPosition, setCalendarPosition] = useState({ top: 0, left: 0 });
+    const calendarButtonRef = useRef<HTMLButtonElement>(null);
+    const calendarRef = useRef<HTMLDivElement>(null);
 
-    const colorPickerRef = useRef<HTMLDivElement>(null);
-    const colorInputRef = useRef<HTMLInputElement>(null);
+    const colorPickerPopoverRef = useRef<HTMLDivElement>(null);
+    const colorPickerButtonRef = useRef<HTMLButtonElement>(null);
+    const [colorPickerPosition, setColorPickerPosition] = useState({ top: 0, left: 0 });
 
     useEffect(() => {
         if (taggingPersonTaskId && personNameInput) {
@@ -323,15 +328,9 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
 
     const handleReminderIconClick = (task: Task) => {
         if (editingReminderTaskId === task.id) {
-            // If already editing, clicking again could close it or do nothing.
-            // For now, let's make it close.
-            datepickerRefs.current[task.id]?.hide();
             setEditingReminderTaskId(null);
         } else {
             setEditingReminderTaskId(task.id);
-            // Datepicker instance will be created and shown via useEffect or directly in JSX
-            // We need to ensure it shows after being set up, if not inline
-            setTimeout(() => datepickerRefs.current[task.id]?.show(), 0);
         }
     };
 
@@ -345,30 +344,13 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
     };
 
     useEffect(() => {
-        Coloris.init();
-        Coloris.setInstance(`.${styles.projectColorPickerInput}`, {
-            themeMode: 'dark', // Or 'light'
-            swatches: PREDEFINED_TASK_COLORS,
-            format: 'hex',
-            alpha: false,
-            onChange: (color: string) => {
-                handleSetProjectTaskColor(color);
-                setShowColorPicker(false);
-            }
-        });
-
-        // Clean up Coloris instance when component unmounts
-        return () => {
-            // There isn't a direct 'destroy' or 'cleanup' for specific instances
-            // in the same way as initialization for a class.
-            // Coloris.init() is global. If issues arise, we might need to
-            // manage the input field directly or check Coloris documentation for cleanup.
-        };
-    }, [project.id, handleSetProjectTaskColor]); // project.id ensures re-init if project changes, though unlikely needed for this picker
-
-    useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
-            if (colorPickerRef.current && !colorPickerRef.current.contains(event.target as Node)) {
+            if (
+                colorPickerPopoverRef.current &&
+                !colorPickerPopoverRef.current.contains(event.target as Node) &&
+                colorPickerButtonRef.current &&
+                !colorPickerButtonRef.current.contains(event.target as Node)
+            ) {
                 setShowColorPicker(false);
             }
         };
@@ -383,15 +365,25 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
     }, [showColorPicker]);
 
     useEffect(() => {
-        if (showColorPicker && colorInputRef.current) {
-            // Small delay to ensure the input is rendered and Coloris is initialized
-            setTimeout(() => {
-                if (colorInputRef.current) {
-                    colorInputRef.current.click();
-                }
-            }, 50);
+        const handleClickOutside = (event: MouseEvent) => {
+            if (
+                calendarRef.current &&
+                !calendarRef.current.contains(event.target as Node) &&
+                calendarButtonRef.current &&
+                !calendarButtonRef.current.contains(event.target as Node)
+            ) {
+                setCalendarOpenForTaskId(null);
+            }
+        };
+
+        if (calendarOpenForTaskId) {
+            document.addEventListener('mousedown', handleClickOutside);
         }
-    }, [showColorPicker]);
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [calendarOpenForTaskId]);
 
     const toggleShowCompleted = (taskId: string) => {
         setShowCompleted((prev) => ({ ...prev, [taskId]: !prev[taskId] }));
@@ -487,24 +479,24 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
                                 </button>
                             </Tippy>
                             <Tippy content='Change Project Color' placement='top' theme='material'>
-                                <div className={styles.colorPickerContainer} ref={colorPickerRef}>
+                                <div className={styles.colorPickerContainer}>
                                     <button
-                                        onClick={() => setShowColorPicker(!showColorPicker)}
+                                        ref={colorPickerButtonRef}
+                                        onClick={() => {
+                                            if (colorPickerButtonRef.current) {
+                                                const rect =
+                                                    colorPickerButtonRef.current.getBoundingClientRect();
+                                                setColorPickerPosition({
+                                                    top: rect.bottom + window.scrollY + 5,
+                                                    left: rect.left + window.scrollX
+                                                });
+                                            }
+                                            setShowColorPicker(!showColorPicker);
+                                        }}
                                         className={styles.editProjectBtn}
                                     >
                                         <FontAwesomeIcon icon={faPalette} />
                                     </button>
-                                    {showColorPicker && (
-                                        <input
-                                            ref={colorInputRef}
-                                            type='text'
-                                            className={styles.projectColorPickerInput}
-                                            data-coloris
-                                            value={project.taskColor || ''}
-                                            readOnly
-                                            id={`colorPicker-${project.id}`}
-                                        />
-                                    )}
                                 </div>
                             </Tippy>
                             <Tippy content='Delete Project' placement='top' theme='material'>
@@ -706,81 +698,65 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
                                         {/* Reminder Button/Input grouped into a new div */}
                                         <div className={styles.reminderSection}>
                                             {editingReminderTaskId === task.id && (
-                                                <div
-                                                    ref={(el) => {
-                                                        if (
-                                                            el &&
-                                                            !datepickerRefs.current[task.id]
-                                                        ) {
-                                                            const currentReminderDate =
-                                                                task.reminder
-                                                                    ? new Date(task.reminder)
-                                                                    : new Date();
-                                                            datepickerRefs.current[task.id] =
-                                                                new AirDatepicker(el, {
-                                                                    timepicker: true,
-                                                                    selectedDates:
-                                                                        currentReminderDate
-                                                                            ? [currentReminderDate]
-                                                                            : [],
-                                                                    inline: false,
-                                                                    timeFormat: 'hh:mm aa',
-                                                                    locale: en,
-                                                                    minDate: new Date(),
-                                                                    buttons: [
-                                                                        {
-                                                                            content: 'Apply',
-                                                                            className:
-                                                                                'air-datepicker-button-apply',
-                                                                            onClick: (
-                                                                                dp: AirDatepicker<HTMLElement>
-                                                                            ) => {
-                                                                                const selectedDate =
-                                                                                    dp
-                                                                                        .selectedDates[0];
-                                                                                onUpdateTask(
-                                                                                    project.id,
-                                                                                    task.id,
-                                                                                    {
-                                                                                        reminder:
-                                                                                            selectedDate
-                                                                                                ? selectedDate.toISOString()
-                                                                                                : undefined
-                                                                                    }
-                                                                                );
-                                                                                dp.hide();
-                                                                                setEditingReminderTaskId(
-                                                                                    null
-                                                                                );
-                                                                            }
-                                                                        },
-                                                                        {
-                                                                            content: 'Close',
-                                                                            className:
-                                                                                'air-datepicker-button-close',
-                                                                            onClick: (
-                                                                                dp: AirDatepicker<HTMLElement>
-                                                                            ) => {
-                                                                                dp.hide();
-                                                                                setEditingReminderTaskId(
-                                                                                    null
-                                                                                );
-                                                                            }
-                                                                        }
-                                                                    ]
-                                                                });
-                                                        } else if (
-                                                            !el &&
-                                                            datepickerRefs.current[task.id]
-                                                        ) {
-                                                            datepickerRefs.current[
-                                                                task.id
-                                                            ]?.destroy();
-                                                            datepickerRefs.current[task.id] = null;
+                                                <div className={styles.datepickerContainer}>
+                                                    <DateTimePicker
+                                                        onChange={(newDate: Date | null) => {
+                                                            onUpdateTask(project.id, task.id, {
+                                                                reminder: newDate
+                                                                    ? newDate.toISOString()
+                                                                    : undefined
+                                                            });
+                                                            setEditingReminderTaskId(null);
+                                                        }}
+                                                        value={
+                                                            task.reminder
+                                                                ? new Date(task.reminder)
+                                                                : null
                                                         }
-                                                    }}
-                                                    className={styles.datepickerContainer}
-                                                />
+                                                        locale='en-US'
+                                                        minDate={new Date()}
+                                                        format='MM/dd/yyyy h:mm a'
+                                                        disableCalendar={true}
+                                                        disableClock={false}
+                                                    />
+                                                    <Tippy
+                                                        content='Open Calendar'
+                                                        placement='top'
+                                                        theme='material'
+                                                    >
+                                                        <button
+                                                            ref={calendarButtonRef}
+                                                            onClick={(e) => {
+                                                                const container = (
+                                                                    e.currentTarget as HTMLElement
+                                                                ).closest(
+                                                                    `.${styles.datepickerContainer}`
+                                                                );
+                                                                if (container) {
+                                                                    const rect =
+                                                                        container.getBoundingClientRect();
+                                                                    setCalendarPosition({
+                                                                        top:
+                                                                            rect.bottom +
+                                                                            window.scrollY,
+                                                                        left:
+                                                                            rect.left +
+                                                                            window.scrollX
+                                                                    });
+                                                                }
+                                                                setCalendarOpenForTaskId(
+                                                                    calendarOpenForTaskId ===
+                                                                        task.id
+                                                                        ? null
+                                                                        : task.id
+                                                                );
+                                                            }}
+                                                            className={styles.calendarToggleBtn}
+                                                        >
+                                                            <FontAwesomeIcon icon={faCalendarAlt} />
+                                                        </button>
+                                                    </Tippy>
+                                                </div>
                                             )}
 
                                             {!editingReminderTaskId ||
@@ -915,6 +891,87 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
                     <p className={styles.noTasksMessage}>No tasks yet. Add one below!</p>
                 )}
             </div>
+            {showColorPicker &&
+                ReactDOM.createPortal(
+                    <div
+                        ref={colorPickerPopoverRef}
+                        style={{
+                            position: 'absolute',
+                            top: `${colorPickerPosition.top}px`,
+                            left: `${colorPickerPosition.left}px`,
+                            zIndex: 1060
+                        }}
+                        className={styles.colorPickerPopover}
+                    >
+                        <HexColorPicker
+                            color={project.taskColor || '#ffffff'}
+                            onChange={handleSetProjectTaskColor}
+                        />
+                        <div className={styles.predefinedColors}>
+                            {PREDEFINED_TASK_COLORS.map((color) => (
+                                <button
+                                    key={color}
+                                    style={{ backgroundColor: color }}
+                                    className={styles.colorOption}
+                                    onClick={() => handleSetProjectTaskColor(color)}
+                                />
+                            ))}
+                        </div>
+                        <button
+                            className={styles.clearColorButton}
+                            onClick={() => handleSetProjectTaskColor(undefined)}
+                        >
+                            Clear Color
+                        </button>
+                    </div>,
+                    document.body
+                )}
+            {calendarOpenForTaskId &&
+                ReactDOM.createPortal(
+                    <div
+                        ref={calendarRef}
+                        style={{
+                            position: 'absolute',
+                            top: `${calendarPosition.top}px`,
+                            left: `${calendarPosition.left}px`,
+                            zIndex: 1050
+                        }}
+                    >
+                        <Calendar
+                            onChange={(date: any) => {
+                                const task = project.tasks.find(
+                                    (t) => t.id === calendarOpenForTaskId
+                                );
+                                if (task) {
+                                    const newDate = new Date(date);
+                                    const existingReminder = task.reminder
+                                        ? new Date(task.reminder)
+                                        : new Date();
+
+                                    newDate.setHours(existingReminder.getHours());
+                                    newDate.setMinutes(existingReminder.getMinutes());
+                                    newDate.setSeconds(existingReminder.getSeconds());
+
+                                    onUpdateTask(project.id, task.id, {
+                                        reminder: newDate.toISOString()
+                                    });
+                                }
+                                setCalendarOpenForTaskId(null);
+                            }}
+                            value={
+                                project.tasks.find((t) => t.id === calendarOpenForTaskId)?.reminder
+                                    ? new Date(
+                                          project.tasks.find(
+                                              (t) => t.id === calendarOpenForTaskId
+                                          )!.reminder!
+                                      )
+                                    : null
+                            }
+                            minDate={new Date()}
+                        />
+                    </div>,
+                    document.body
+                )}
         </div>
     );
 };
