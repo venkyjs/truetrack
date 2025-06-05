@@ -713,6 +713,7 @@
     /* This container is mostly a placeholder for the ref, but can be used for positioning if needed */
     position: relative; /* Allows absolute positioning of the datepicker if it doesn't do so itself */
     z-index: 99999; /* Ensure picker is above other elements in the card */
+    isolation: isolate; /* Create a new stacking context */
 }
 
 /* Custom styles for react-datetime-picker to fix visibility and z-index issues */
@@ -824,15 +825,23 @@
     position: absolute !important;
 }
 
-/* Ensure the calendar container itself has highest priority but allow natural positioning */
+/* Ensure the calendar container itself has highest priority and proper styling */
 :global(.react-datetime-picker__calendar) {
-    z-index: 999999 !important;
+    z-index: 10 !important; /* Maximum z-index value */
     position: absolute !important;
+    background: white !important;
+    border: 1px solid #ccc !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3) !important;
+    transform: translateZ(0) !important; /* Force hardware acceleration */
 }
 
 :global(.react-datetime-picker__clock) {
-    z-index: 999999 !important;
+    z-index: 2147483647 !important; /* Maximum z-index value */
     position: absolute !important;
+    background: white !important;
+    border: 1px solid #ccc !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3) !important;
+    transform: translateZ(0) !important; /* Force hardware acceleration */
 }
 
 .reminderText {
