@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
+import ReactDOM from 'react-dom';
 import type { Project, Task, TaskItem, Person } from '../types'; // Assuming types.ts is in the same src folder
 import styles from './ProjectLane.module.css'; // Use CSS module import
 import classNames from 'classnames';
@@ -11,11 +12,13 @@ import {
     faPalette,
     faTag,
     faBell,
-    faBellSlash
+    faBellSlash,
+    faCalendarAlt
 } from '@fortawesome/free-solid-svg-icons';
 import Tippy from '@tippyjs/react';
 import DateTimePicker from 'react-datetime-picker';
 import 'react-datetime-picker/dist/DateTimePicker.css';
+import { Calendar } from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import 'react-clock/dist/Clock.css';
 import { format } from 'date-fns'; // For formatting the date
@@ -89,6 +92,11 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
     const [editingReminderTaskId, setEditingReminderTaskId] = useState<string | null>(null);
 
     const [showColorPicker, setShowColorPicker] = useState(false);
+
+    const [calendarOpenForTaskId, setCalendarOpenForTaskId] = useState<string | null>(null);
+    const [calendarPosition, setCalendarPosition] = useState({ top: 0, left: 0 });
+    const calendarButtonRef = useRef<HTMLButtonElement>(null);
+    const calendarRef = useRef<HTMLDivElement>(null);
 
     const colorPickerRef = useRef<HTMLDivElement>(null);
     const colorInputRef = useRef<HTMLInputElement>(null);
@@ -374,6 +382,27 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, [showColorPicker]);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (
+                calendarRef.current &&
+                !calendarRef.current.contains(event.target as Node) &&
+                calendarButtonRef.current &&
+                !calendarButtonRef.current.contains(event.target as Node)
+            ) {
+                setCalendarOpenForTaskId(null);
+            }
+        };
+
+        if (calendarOpenForTaskId) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [calendarOpenForTaskId]);
 
     useEffect(() => {
         if (showColorPicker && colorInputRef.current) {
@@ -717,9 +746,38 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
                                                         locale='en-US'
                                                         minDate={new Date()}
                                                         format='MM/dd/yyyy h:mm a'
-                                                        disableCalendar={false}
+                                                        disableCalendar={true}
                                                         disableClock={false}
                                                     />
+                                                    <Tippy
+                                                        content='Open Calendar'
+                                                        placement='top'
+                                                        theme='material'
+                                                    >
+                                                        <button
+                                                            ref={calendarButtonRef}
+                                                            onClick={(e) => {
+                                                                const rect = (
+                                                                    e.currentTarget as HTMLElement
+                                                                ).getBoundingClientRect();
+                                                                setCalendarPosition({
+                                                                    top:
+                                                                        rect.bottom +
+                                                                        window.scrollY,
+                                                                    left: rect.left + window.scrollX
+                                                                });
+                                                                setCalendarOpenForTaskId(
+                                                                    calendarOpenForTaskId ===
+                                                                        task.id
+                                                                        ? null
+                                                                        : task.id
+                                                                );
+                                                            }}
+                                                            className={styles.calendarToggleBtn}
+                                                        >
+                                                            <FontAwesomeIcon icon={faCalendarAlt} />
+                                                        </button>
+                                                    </Tippy>
                                                 </div>
                                             )}
 
@@ -855,6 +913,52 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
                     <p className={styles.noTasksMessage}>No tasks yet. Add one below!</p>
                 )}
             </div>
+            {calendarOpenForTaskId &&
+                ReactDOM.createPortal(
+                    <div
+                        ref={calendarRef}
+                        style={{
+                            position: 'absolute',
+                            top: `${calendarPosition.top}px`,
+                            left: `${calendarPosition.left}px`,
+                            zIndex: 1050
+                        }}
+                    >
+                        <Calendar
+                            onChange={(date: any) => {
+                                const task = project.tasks.find(
+                                    (t) => t.id === calendarOpenForTaskId
+                                );
+                                if (task) {
+                                    const newDate = new Date(date);
+                                    const existingReminder = task.reminder
+                                        ? new Date(task.reminder)
+                                        : new Date();
+
+                                    newDate.setHours(existingReminder.getHours());
+                                    newDate.setMinutes(existingReminder.getMinutes());
+                                    newDate.setSeconds(existingReminder.getSeconds());
+
+                                    onUpdateTask(project.id, task.id, {
+                                        reminder: newDate.toISOString()
+                                    });
+                                }
+                                setCalendarOpenForTaskId(null);
+                            }}
+                            value={
+                                project.tasks.find((t) => t.id === calendarOpenForTaskId)?.reminder
+                                    ? new Date(
+                                          project.tasks.find(
+                                              (t) => t.id === calendarOpenForTaskId
+                                          )!.reminder!
+                                      )
+                                    : null
+                            }
+                            minDate={new Date()}
+                        />
+                    </div>,
+                    document.body
+                )}
         </div>
     );
 };
