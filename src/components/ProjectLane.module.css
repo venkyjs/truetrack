@@ -796,6 +796,10 @@
     color: #333 !important;
 }
 
+:global(.react-calendar__tile:disabled) {
+    color: #ccc !important;
+}
+
 :global(.react-calendar__month-view__weekdays) {
     background: #f5f5f5 !important;
 }
