@@ -726,16 +726,44 @@
     border-radius: 4px;
     background: white;
     z-index: 99999 !important;
+    padding: 4px 6px !important;
+    min-height: 24px !important;
+    display: flex !important;
+    align-items: center !important;
 }
 
 .datepickerContainer :global(.react-datetime-picker__inputGroup) {
     background: white;
     color: #333;
+    font-size: 11px !important;
+    line-height: 16px !important;
+    display: flex !important;
+    align-items: center !important;
+    min-height: 16px !important;
 }
 
 .datepickerContainer :global(.react-datetime-picker__inputGroup__input) {
     color: #333 !important;
     background: white !important;
+    font-size: 11px !important;
+    padding: 0 !important;
+    border: none !important;
+    line-height: 16px !important;
+    min-height: 16px !important;
+    margin-left: 0 !important;
+}
+
+.datepickerContainer :global(.react-datetime-picker__inputGroup__divider) {
+    color: #333 !important;
+    font-size: 11px !important;
+    line-height: 16px !important;
+}
+
+.datepickerContainer :global(.react-datetime-picker__button) {
+    padding: 2px !important;
+    background: white !important;
+    border: none !important;
+    line-height: 16px !important;
 }
 
 .datepickerContainer :global(.react-calendar) {

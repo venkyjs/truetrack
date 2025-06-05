@@ -716,7 +716,7 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
                                                         }
                                                         locale='en-US'
                                                         minDate={new Date()}
-                                                        format='h:mm a'
+                                                        format='MM/dd/yyyy h:mm a'
                                                         disableCalendar={false}
                                                         disableClock={false}
                                                     />
