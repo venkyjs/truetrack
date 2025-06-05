@@ -575,41 +575,6 @@
     position: relative; /* For palette positioning */
 }
 
-.taskColorPickerButton {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    border: 1px solid #ccc;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1em; /* For emoji */
-    padding: 0;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-}
-
-.taskColorPickerButton:hover {
-    border-color: #999;
-}
-
-.colorPalette {
-    position: absolute;
-    bottom: 100%; /* Position above the button */
-    left: 0;
-    background-color: white;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    padding: 8px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    width: 160px; /* Adjust as needed for number of colors */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
-    z-index: 10; /* Ensure it's above other elements */
-    margin-bottom: 5px; /* Space from the button */
-}
-
 .colorOption {
     width: 24px;
     height: 24px;
@@ -622,61 +587,6 @@
 .colorOption:hover {
     border-color: #999;
     transform: scale(1.1);
-}
-
-.noColorOption {
-    background-color: #f0f0f0;
-    color: #333;
-    font-size: 1.1em;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.projectColorPickerButton {
-    background-color: transparent;
-    color: #fff; /* Assuming white text for contrast, adjust if needed */
-    padding: 0;
-    font-size: 0.9em;
-    cursor: pointer;
-}
-
-.projectColorPickerButton:hover {
-    background-color: rgba(255, 255, 255, 0.1); /* Subtle hover effect */
-}
-
-.projectColorPickerInput {
-    background: none;
-    border: none;
-    color: #fff;
-    font-size: 0.9em;
-    cursor: pointer;
-    padding: 2px 4px;
-    border-radius: 3px;
-    line-height: 1;
-    opacity: 0.7;
-    transition: opacity 0.2s ease;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    margin-top: 4px;
-    z-index: 10;
-    background-color: rgba(0, 0, 0, 0.8);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.projectColorPickerInput:hover {
-    opacity: 1;
-}
-
-.cancelColorOption {
-    background-color: #f0f0f0; /* Light grey, distinct from colors */
-    color: #333;
-    border: 1px solid #ccc;
-}
-
-.cancelColorOption:hover {
-    background-color: #e0e0e0;
 }
 
 .mainActionsRow {
@@ -879,13 +789,6 @@
     color: #ff4d4f; /* Match existing clearReminderBtn */
 }
 
-.projectColorPickerInput:hover {
-    border-color: #999;
-    background-color: rgba(255, 255, 255, 0.9);
-}
-
-/* Remove the ::before pseudo-element since we're using FontAwesome icon now */
-
 .calendarToggleBtn {
     background: none;
     border: none;
@@ -900,4 +803,42 @@
 
 .calendarToggleBtn:hover {
     opacity: 1;
+}
+
+.colorPickerPopover {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 10;
+    margin-top: 5px;
+    background-color: #333;
+    border: 1px solid #555;
+    border-radius: 4px;
+    padding: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.predefinedColors {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+    border-bottom: 1px solid #555;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+}
+
+.clearColorButton {
+    width: 100%;
+    text-align: center;
+    background-color: #555;
+    color: #fff;
+    border: none;
+    padding: 5px;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.clearColorButton:hover {
+    background-color: #666;
 }
