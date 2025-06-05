@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import type { FC } from 'react';
 // import { дорога } from './assets'; // Removed unused import causing error
 // Import global types

@@ -5,6 +5,7 @@ import { faCog, faPlus } from '@fortawesome/free-solid-svg-icons';
 import Tippy from '@tippyjs/react';
 import 'tippy.js/dist/tippy.css'; // Default Tippy CSS
 import 'tippy.js/themes/light.css'; // Optional: if you want a base light theme to customize from
+import logo from '../../assets/truetrack-logo.png';
 
 interface AppHeaderProps {
     onOpenPreferences: () => void;
@@ -15,7 +16,7 @@ const AppHeader: FC<AppHeaderProps> = ({ onOpenPreferences, onAddProject }) => {
     return (
         <header className={styles.appHeader}>
             <div className={styles.logoContainer}>
-                <img src='/truetrack-logo.png' alt='TrueTrack!' className={styles.logo} />
+                <img src={logo} alt='TrueTrack!' className={styles.logo} />
             </div>
             <div className={styles.headerControls}>
                 <Tippy content='Add New Project' placement='bottom' theme='material'>
