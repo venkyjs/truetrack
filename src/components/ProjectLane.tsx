@@ -757,15 +757,23 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
                                                         <button
                                                             ref={calendarButtonRef}
                                                             onClick={(e) => {
-                                                                const rect = (
+                                                                const container = (
                                                                     e.currentTarget as HTMLElement
-                                                                ).getBoundingClientRect();
-                                                                setCalendarPosition({
-                                                                    top:
-                                                                        rect.bottom +
-                                                                        window.scrollY,
-                                                                    left: rect.left + window.scrollX
-                                                                });
+                                                                ).closest(
+                                                                    `.${styles.datepickerContainer}`
+                                                                );
+                                                                if (container) {
+                                                                    const rect =
+                                                                        container.getBoundingClientRect();
+                                                                    setCalendarPosition({
+                                                                        top:
+                                                                            rect.bottom +
+                                                                            window.scrollY,
+                                                                        left:
+                                                                            rect.left +
+                                                                            window.scrollX
+                                                                    });
+                                                                }
                                                                 setCalendarOpenForTaskId(
                                                                     calendarOpenForTaskId ===
                                                                         task.id
