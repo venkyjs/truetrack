@@ -469,8 +469,11 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
 
     return (
         <div ref={laneRef}>
-            <div className={styles.projectLaneContainer} style={projectLaneStyle}>
-                <div className={styles.projectHeader}>
+            <div
+                className={styles.projectLaneContainer}
+                style={{ borderRightColor: project.taskColor }}
+            >
+                <div className={`${styles.projectHeader} project-drag-handle`}>
                     <div className={styles.projectTitleContainer}>
                         {isEditingProjectTitle ? (
                             <input

@@ -839,3 +839,7 @@
 .clearColorButton:hover {
     background-color: #666;
 }
+
+:global(.project-drag-handle) {
+    cursor: move;
+}
