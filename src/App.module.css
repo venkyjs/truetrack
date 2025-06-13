@@ -69,14 +69,8 @@ select {
 }
 
 .mainContentContainer {
-    display: flex;
-    flex-direction: row;
-    overflow-x: auto; /* Allows horizontal scrolling for lanes */
-    overflow-y: hidden; /* Prevents vertical scrolling on the container itself */
     height: calc(100vh - 60px); /* Assuming AppHeader is 60px. Adjust as needed. */
     padding: 20px;
-    gap: 20px; /* Spacing between project lanes */
-    align-items: flex-start; /* Align lanes to the top */
     box-sizing: border-box;
 }
 

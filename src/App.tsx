@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react';
 import type { FC } from 'react';
+import { Responsive, WidthProvider } from 'react-grid-layout';
+import 'react-grid-layout/css/styles.css';
+import 'react-resizable/css/styles.css';
 // import { дорога } from './assets'; // Removed unused import causing error
 // Import global types
 import type { Project, Task as ProjectTask, Person } from './types';
@@ -11,6 +14,7 @@ import styles from './App.module.css';
 import AppHeader from './components/AppHeader/AppHeader';
 import PreferencesDialog from './components/PreferencesDialog/PreferencesDialog';
 import './components/TooltipStyles.css'; // Import custom tooltip styles
+import NotificationManager from './components/NotificationManager';
 // import ProjectForm from './components/ProjectForm'; // These were incorrectly added in a previous edit
 // import ProjectList from './components/ProjectList'; // These were incorrectly added in a previous edit
 // import WallpaperSelector from './components/WallpaperSelector'; // These were incorrectly added in a previous edit
@@ -69,8 +73,11 @@ const initialGlobalPeople: Person[] = [
 //   },
 // ];
 
+const ResponsiveGridLayout = WidthProvider(Responsive);
+
 const App: FC = () => {
     const [projects, setProjects] = useState<Project[]>([]);
+    const [layouts, setLayouts] = useState<any>({});
     const [nextProjectId, setNextProjectId] = useState<number>(1);
     const [isPreferencesOpen, setIsPreferencesOpen] = useState<boolean>(false);
     const [appWallpaper, setAppWallpaper] = useState<string | null>(null);
@@ -88,6 +95,7 @@ const App: FC = () => {
         const loadData = async () => {
             try {
                 const savedProjects = await idbGet<Project[]>('projectsData');
+                const savedLayouts = await idbGet<any>('projectsLayouts');
                 const wallpaper = await idbGet<string>('appWallpaper');
                 const savedPeople = await idbGet<Person[]>('globalPeopleData'); // Load people
 
@@ -102,6 +110,19 @@ const App: FC = () => {
                         }))
                     }));
                     setProjects(parsedProjects);
+                    if (savedLayouts && Object.keys(savedLayouts).length > 0) {
+                        setLayouts(savedLayouts);
+                    } else {
+                        // Auto-layout if no layout is saved
+                        const newLayout = parsedProjects.map((p, index) => ({
+                            i: p.id,
+                            x: (index * 4) % 12, // Default width of 4 cols
+                            y: Infinity, // To stack them vertically
+                            w: 4,
+                            h: 15 // A generous default height
+                        }));
+                        setLayouts({ lg: newLayout });
+                    }
                     // setInitialLoadHasProjects(true); // Part of the original unused variable
                 } else {
                     // If no saved projects or empty array, set projects to empty
@@ -157,7 +178,7 @@ const App: FC = () => {
         setNextProjectId(maxId < 0 ? 1 : maxId + 1); // Ensure nextId is at least 1
     }, [projects, dataLoaded]);
 
-    // Save projects to IndexedDB
+    // Save projects and layouts to IndexedDB
     useEffect(() => {
         if (dataLoaded) {
             // Check only dataLoaded
@@ -165,10 +186,16 @@ const App: FC = () => {
                 idbSet('projectsData', projects).catch((error) =>
                     console.error('Failed to save projects to IndexedDB', error)
                 );
+                idbSet('projectsLayouts', layouts).catch((error) =>
+                    console.error('Failed to save layouts to IndexedDB', error)
+                );
             } else {
                 // If projects array becomes empty AFTER initial load
                 idbRemove('projectsData').catch((error) =>
                     console.error('Failed to remove projectsData from IndexedDB', error)
+                );
+                idbRemove('projectsLayouts').catch((error) =>
+                    console.error('Failed to remove layouts from IndexedDB', error)
                 );
             }
             // Save globalPeople to IndexedDB whenever it changes after initial load
@@ -182,7 +209,7 @@ const App: FC = () => {
                 );
             }
         }
-    }, [projects, globalPeople, dataLoaded]);
+    }, [projects, layouts, globalPeople, dataLoaded]);
 
     // Save wallpaper and update body style
     useEffect(() => {
@@ -212,11 +239,34 @@ const App: FC = () => {
             taskColor: getRandomPastelColor()
         };
         setProjects([...projects, newProject]);
+        // Add a new layout item for the new project to all breakpoints
+        const newLayouts = { ...layouts };
+        for (const breakpoint in newLayouts) {
+            newLayouts[breakpoint] = [
+                ...(newLayouts[breakpoint] || []),
+                {
+                    i: newProject.id,
+                    x: 0,
+                    y: Infinity, // This will cause the item to be placed at the bottom
+                    w: 3,
+                    h: 5 // Default height, can be adjusted
+                }
+            ];
+        }
+        setLayouts(newLayouts);
         // nextProjectId will update via its own useEffect
     };
 
     const handleDeleteProject = (projectId: string) => {
         setProjects(projects.filter((p) => p.id !== projectId));
+        // Remove the layout item for the deleted project from all breakpoints
+        const newLayouts = { ...layouts };
+        for (const breakpoint in newLayouts) {
+            newLayouts[breakpoint] = newLayouts[breakpoint].filter(
+                (item: { i: string }) => item.i !== projectId
+            );
+        }
+        setLayouts(newLayouts);
     };
 
     const handleUpdateProjectTitle = (projectId: string, newTitle: string) => {
@@ -286,6 +336,25 @@ const App: FC = () => {
         setAppWallpaper(wallpaper);
     };
 
+    const handleLayoutChange = (layout: any, newLayouts: any) => {
+        setLayouts(newLayouts);
+    };
+
+    const handleHeightChange = (projectId: string, newHeight: number) => {
+        setLayouts((prevLayouts: { [key: string]: any[] }) => {
+            const newLayouts = JSON.parse(JSON.stringify(prevLayouts));
+            let changed = false;
+            for (const breakpoint in newLayouts) {
+                const item = newLayouts[breakpoint].find((l: { i: string }) => l.i === projectId);
+                if (item && item.h !== newHeight) {
+                    item.h = newHeight;
+                    changed = true;
+                }
+            }
+            return changed ? newLayouts : prevLayouts;
+        });
+    };
+
     // New function to find or create a person
     const handleFindOrCreatePerson = (name: string): string => {
         const Tname = name.trim();
@@ -307,9 +376,10 @@ const App: FC = () => {
 
     return (
         <>
+            <NotificationManager projects={projects} />
             <AppHeader
-                onOpenPreferences={() => setIsPreferencesOpen(true)}
                 onAddProject={handleAddProject}
+                onOpenPreferences={() => setIsPreferencesOpen(true)}
             />
             <main
                 className={`${styles.mainContentContainer} ${
@@ -321,20 +391,32 @@ const App: FC = () => {
                         No projects available. Click the '+' button to add a new project.
                     </div>
                 ) : (
-                    projects.map((project) => (
-                        <ProjectLane
-                            key={project.id}
-                            project={project}
-                            people={globalPeople} // Changed from availablePeople to globalPeople (state)
-                            findOrCreatePerson={handleFindOrCreatePerson} // Added prop
-                            onDeleteProject={handleDeleteProject}
-                            onUpdateProjectTitle={handleUpdateProjectTitle}
-                            onUpdateTask={handleUpdateTask}
-                            onAddTask={handleAddTask}
-                            onDeleteTask={handleDeleteTask}
-                            onUpdateProjectTaskColor={handleUpdateProjectTaskColor}
-                        />
-                    ))
+                    <ResponsiveGridLayout
+                        className='layout'
+                        layouts={layouts}
+                        breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
+                        cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
+                        rowHeight={30}
+                        onLayoutChange={handleLayoutChange}
+                    >
+                        {projects.map((project) => (
+                            <div key={project.id}>
+                                <ProjectLane
+                                    project={project}
+                                    people={globalPeople}
+                                    findOrCreatePerson={handleFindOrCreatePerson}
+                                    onDeleteProject={handleDeleteProject}
+                                    onUpdateProjectTitle={handleUpdateProjectTitle}
+                                    onUpdateTask={handleUpdateTask}
+                                    onAddTask={handleAddTask}
+                                    onDeleteTask={handleDeleteTask}
+                                    onUpdateProjectTaskColor={handleUpdateProjectTaskColor}
+                                    rowHeight={30}
+                                    onHeightChange={handleHeightChange}
+                                />
+                            </div>
+                        ))}
+                    </ResponsiveGridLayout>
                 )}
             </main>
             <PreferencesDialog
