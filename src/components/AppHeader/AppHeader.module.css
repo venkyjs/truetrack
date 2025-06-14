@@ -75,9 +75,19 @@
 
 /* Specific styles if needed, though .controlButton might be sufficient */
 .addProjectButton {
+    composes: controlButton;
     /* Any specific styles for add project button */
 }
 
 .settingsButton {
+    composes: controlButton;
     /* Any specific styles for settings button */
+}
+
+.addProjectButton:hover {
+    background-color: #2a9d8f; /* A slightly darker shade for hover */
+}
+
+.autoLayoutButton {
+    composes: controlButton;
 }

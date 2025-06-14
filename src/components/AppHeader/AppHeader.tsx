@@ -1,7 +1,7 @@
 import { useState, type FC } from 'react';
 import styles from './AppHeader.module.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCog, faPlus, faSearch } from '@fortawesome/free-solid-svg-icons';
+import { faCog, faPlus, faSearch, faLayerGroup } from '@fortawesome/free-solid-svg-icons';
 import Tippy from '@tippyjs/react';
 import 'tippy.js/dist/tippy.css'; // Default Tippy CSS
 import 'tippy.js/themes/light.css'; // Optional: if you want a base light theme to customize from
@@ -11,9 +11,15 @@ interface AppHeaderProps {
     onOpenPreferences: () => void;
     onAddProject: () => void;
     onSearch: (query: string) => void;
+    onAutoLayout: () => void;
 }
 
-const AppHeader: FC<AppHeaderProps> = ({ onOpenPreferences, onAddProject, onSearch }) => {
+const AppHeader: FC<AppHeaderProps> = ({
+    onOpenPreferences,
+    onAddProject,
+    onSearch,
+    onAutoLayout
+}) => {
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
 
@@ -57,6 +63,14 @@ const AppHeader: FC<AppHeaderProps> = ({ onOpenPreferences, onAddProject, onSear
                         onChange={handleSearchChange}
                     />
                 </div>
+                <Tippy content='Auto-layout Projects' placement='bottom' theme='material'>
+                    <button
+                        onClick={onAutoLayout}
+                        className={`${styles.controlButton} ${styles.autoLayoutButton}`}
+                    >
+                        <FontAwesomeIcon icon={faLayerGroup} />
+                    </button>
+                </Tippy>
                 <Tippy content='Add New Project' placement='bottom' theme='material'>
                     <button
                         onClick={onAddProject}

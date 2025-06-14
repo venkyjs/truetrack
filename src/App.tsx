@@ -383,6 +383,49 @@ const App: FC = () => {
         setSearchQuery(query);
     };
 
+    const handleAutoLayout = () => {
+        const sortedProjects = [...projects].sort((a, b) =>
+            a.title.localeCompare(b.title, undefined, { sensitivity: 'base' })
+        );
+
+        const newLayouts: { [key: string]: any[] } = {};
+        const cols = { lg: 4, md: 4, sm: 2, xs: 1, xxs: 1 };
+
+        for (const breakpoint in cols) {
+            const numCols = cols[breakpoint as keyof typeof cols];
+            const layout = [];
+            const colHeights = Array(numCols).fill(0); // Keep track of height of each column
+
+            for (const p of sortedProjects) {
+                const originalLayoutItem =
+                    (layouts[breakpoint] || []).find((l: { i: string }) => l.i === p.id) || {};
+                const h = originalLayoutItem.h || 15;
+
+                // Find column with minimum height
+                let minColIndex = 0;
+                if (numCols > 1) {
+                    for (let i = 1; i < numCols; i++) {
+                        if (colHeights[i] < colHeights[minColIndex]) {
+                            minColIndex = i;
+                        }
+                    }
+                }
+
+                layout.push({
+                    i: p.id,
+                    x: minColIndex,
+                    y: colHeights[minColIndex],
+                    w: 1,
+                    h: h
+                });
+
+                colHeights[minColIndex] += h;
+            }
+            newLayouts[breakpoint] = layout;
+        }
+        setLayouts(newLayouts);
+    };
+
     const filteredProjects = projects.filter((project) => {
         if (!searchQuery) return true;
         const query = searchQuery.toLowerCase();
@@ -421,6 +464,7 @@ const App: FC = () => {
                 onAddProject={handleAddProject}
                 onOpenPreferences={() => setIsPreferencesOpen(true)}
                 onSearch={handleSearch}
+                onAutoLayout={handleAutoLayout}
             />
             <main
                 className={`${styles.mainContentContainer} ${
