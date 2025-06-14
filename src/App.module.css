@@ -70,13 +70,15 @@ select {
 
 .mainContentContainer {
     display: flex;
+    flex-wrap: wrap; /* Allow project lanes to wrap */
     flex-direction: row;
-    overflow-x: auto; /* Allows horizontal scrolling for lanes */
-    overflow-y: hidden; /* Prevents vertical scrolling on the container itself */
+    overflow-y: auto; /* Allows vertical scrolling for wrapped lanes */
+    overflow-x: hidden; /* Prevents horizontal scrolling */
     height: calc(100vh - 60px); /* Assuming AppHeader is 60px. Adjust as needed. */
     padding: 20px;
     gap: 20px; /* Spacing between project lanes */
     align-items: flex-start; /* Align lanes to the top */
+    align-content: flex-start; /* Aligns wrapped lines to the start of the container */
     box-sizing: border-box;
 }
 
