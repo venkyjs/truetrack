@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import type { FC } from 'react';
 import { Responsive, WidthProvider } from 'react-grid-layout';
 import 'react-grid-layout/css/styles.css';
@@ -338,6 +338,10 @@ const App: FC = () => {
     };
 
     const handleLayoutChange = (layout: any, newLayouts: any) => {
+        // When searching, don't save layout changes to preserve the original layout
+        if (searchQuery) {
+            return;
+        }
         setLayouts(newLayouts);
     };
 
@@ -394,6 +398,22 @@ const App: FC = () => {
         return projectTitleMatch || taskMatch;
     });
 
+    const layoutsForSearch = useMemo(() => {
+        if (!searchQuery) {
+            return layouts;
+        }
+        const filteredIds = new Set(filteredProjects.map((p) => p.id));
+        const newLayouts: { [key: string]: any[] } = {};
+        for (const breakpoint in layouts) {
+            if (layouts[breakpoint]) {
+                newLayouts[breakpoint] = layouts[breakpoint].filter((l: { i: string }) =>
+                    filteredIds.has(l.i)
+                );
+            }
+        }
+        return newLayouts;
+    }, [searchQuery, filteredProjects, layouts]);
+
     return (
         <>
             <NotificationManager projects={projects} />
@@ -414,12 +434,15 @@ const App: FC = () => {
                 ) : (
                     <ResponsiveGridLayout
                         className='layout'
-                        layouts={layouts}
+                        layouts={layoutsForSearch}
                         breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
                         cols={{ lg: 4, md: 4, sm: 2, xs: 1, xxs: 1 }}
                         rowHeight={20}
                         draggableHandle='.project-drag-handle'
                         onLayoutChange={handleLayoutChange}
+                        isDraggable={!searchQuery}
+                        isResizable={!searchQuery}
+                        compactType='vertical'
                     >
                         {filteredProjects.map((project) => (
                             <div key={project.id}>

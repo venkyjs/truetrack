@@ -16,10 +16,15 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 10px;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 0;
-    background-color: rgba(0, 0, 0, 0.9);
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dragHandle {
+    cursor: grab;
+    padding: 0 10px;
+    color: rgba(255, 255, 255, 0.5);
 }
 
 .projectTitleContainer {

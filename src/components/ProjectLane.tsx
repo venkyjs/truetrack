@@ -13,7 +13,8 @@ import {
     faTag,
     faBell,
     faBellSlash,
-    faCalendarAlt
+    faCalendarAlt,
+    faGripVertical
 } from '@fortawesome/free-solid-svg-icons';
 import Tippy from '@tippyjs/react';
 import DateTimePicker from 'react-datetime-picker';
@@ -433,7 +434,10 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
 
     return (
         <div ref={laneRef} className={styles.projectLane}>
-            <header className={classNames(styles.projectHeader, 'project-drag-handle')}>
+            <header className={styles.projectHeader}>
+                <div className={classNames(styles.dragHandle, 'project-drag-handle')}>
+                    <FontAwesomeIcon icon={faGripVertical} />
+                </div>
                 {isEditingProjectTitle ? (
                     <input
                         type='text'
