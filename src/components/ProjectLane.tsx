@@ -23,6 +23,7 @@ import 'react-calendar/dist/Calendar.css';
 import 'react-clock/dist/Clock.css';
 import { format } from 'date-fns'; // For formatting the date
 import { HexColorPicker } from 'react-colorful';
+import Highlight from './Highlight/Highlight';
 
 interface ProjectLaneProps {
     project: Project;
@@ -40,6 +41,7 @@ interface ProjectLaneProps {
     onUpdateProjectTaskColor: (projectId: string, color?: string) => void;
     rowHeight: number;
     onHeightChange: (projectId: string, newHeight: number) => void;
+    searchQuery: string;
 }
 
 const PREDEFINED_TASK_COLORS = [
@@ -66,7 +68,8 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
     onDeleteTask,
     onUpdateProjectTaskColor,
     rowHeight,
-    onHeightChange
+    onHeightChange,
+    searchQuery
 }) => {
     const laneRef = useRef<HTMLDivElement>(null);
     const lastNotifiedHeight = useRef<number | null>(null);
@@ -258,20 +261,17 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
         if (!editingItem) return;
         const { taskId, itemId } = editingItem;
 
-        if (currentEditingItemText.trim() === '') {
-            // If text is empty, delete the item
-            handleDeleteItem(taskId, itemId);
-            setEditingItem(null);
-            return;
-        }
-
         const task = project.tasks.find((t) => t.id === taskId);
         if (!task) return;
-        const originalItem = task.items.find((i) => i.id === itemId);
 
-        if (originalItem && originalItem.text !== currentEditingItemText.trim()) {
-            const updatedItems = task.items.map((i) =>
-                i.id === itemId ? { ...i, text: currentEditingItemText.trim() } : i
+        const originalItem = task.items.find((i) => i.id === itemId);
+        if (
+            originalItem &&
+            currentEditingItemText.trim() !== '' &&
+            currentEditingItemText !== originalItem.text
+        ) {
+            const updatedItems = task.items.map((item) =>
+                item.id === itemId ? { ...item, text: currentEditingItemText.trim() } : item
             );
             onUpdateTask(project.id, taskId, { items: updatedItems });
         }
@@ -280,24 +280,17 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
 
     const handleItemTextKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter') handleItemTextSave();
-        if (e.key === 'Escape') {
-            if (editingItem) {
-                const task = project.tasks.find((t) => t.id === editingItem.taskId);
-                const originalItem = task?.items.find((i) => i.id === editingItem.itemId);
-                if (originalItem) setCurrentEditingItemText(originalItem.text);
-            }
-            setEditingItem(null);
-        }
+        if (e.key === 'Escape') setEditingItem(null);
     };
 
     const handleDeleteItem = (taskId: string, itemId: string) => {
         const task = project.tasks.find((t) => t.id === taskId);
         if (!task) return;
-        const updatedItems = task.items.filter((i) => i.id !== itemId);
+        const updatedItems = task.items.filter((item) => item.id !== itemId);
         onUpdateTask(project.id, taskId, { items: updatedItems });
     };
 
-    // Person Tagging Handlers
+    // Person Tagging
     const handleOpenPersonTagging = (taskId: string) => {
         setTaggingPersonTaskId(taskId);
         setPersonNameInput('');
@@ -305,59 +298,45 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
     };
 
     const handlePersonNameInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const name = e.target.value;
-        setPersonNameInput(name);
-        if (name.trim().length > 0) {
-            const lowerCaseName = name.toLowerCase();
-            setPersonSuggestions(
-                people.filter((p) => p.name.toLowerCase().includes(lowerCaseName))
-            );
-        } else {
-            setPersonSuggestions([]);
-        }
+        setPersonNameInput(e.target.value);
     };
 
     const handleAssignPerson = (taskId: string, personId: string) => {
         const task = project.tasks.find((t) => t.id === taskId);
-        if (task && !task.assignedPersons.includes(personId)) {
-            const updatedPersons = [...task.assignedPersons, personId];
-            onUpdateTask(project.id, taskId, { assignedPersons: updatedPersons });
+        if (!task) return;
+
+        if (!task.assignedPersons.includes(personId)) {
+            const updatedAssignedPersons = [...task.assignedPersons, personId];
+            onUpdateTask(project.id, taskId, { assignedPersons: updatedAssignedPersons });
         }
-        // Close tagging UI after assignment
-        setTaggingPersonTaskId(null);
-        setPersonNameInput('');
-        setPersonSuggestions([]);
+        setTaggingPersonTaskId(null); // Close tagging UI
     };
 
     const handleCreateAndAssignPerson = (taskId: string) => {
-        if (personNameInput.trim() === '') return;
-        const personId = findOrCreatePerson(personNameInput.trim());
-        handleAssignPerson(taskId, personId);
+        const newPersonId = findOrCreatePerson(personNameInput);
+        handleAssignPerson(taskId, newPersonId);
     };
 
     const handleRemovePersonFromTask = (taskId: string, personId: string) => {
         const task = project.tasks.find((t) => t.id === taskId);
-        if (task) {
-            const updatedPersons = task.assignedPersons.filter((id) => id !== personId);
-            onUpdateTask(project.id, taskId, { assignedPersons: updatedPersons });
-        }
+        if (!task) return;
+        const updatedAssignedPersons = task.assignedPersons.filter((id) => id !== personId);
+        onUpdateTask(project.id, taskId, { assignedPersons: updatedAssignedPersons });
     };
 
-    const getAssignedPeopleDetails = useMemo(() => {
-        return (taskId: string) => {
-            const task = project.tasks.find((t) => t.id === taskId);
-            if (!task) return [];
-            return task.assignedPersons
-                .map((personId) => people.find((p) => p.id === personId))
-                .filter(Boolean) as Person[];
-        };
-    }, [project.tasks, people]);
+    const getPersonById = (personId: string) => people.find((p) => p.id === personId);
+    const MAX_VISIBLE_AVATARS = 3;
 
+    // Reminder Handlers
     const handleReminderIconClick = (task: Task) => {
-        if (editingReminderTaskId === task.id) {
+        setEditingReminderTaskId(task.id === editingReminderTaskId ? null : task.id);
+    };
+
+    const handleReminderChange = (date: Date | null, taskId: string, shouldKeepOpen?: boolean) => {
+        const isoDate = date ? date.toISOString() : undefined;
+        onUpdateTask(project.id, taskId, { reminder: isoDate });
+        if (!shouldKeepOpen) {
             setEditingReminderTaskId(null);
-        } else {
-            setEditingReminderTaskId(task.id);
         }
     };
 
@@ -368,7 +347,24 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
 
     const handleSetProjectTaskColor = (color?: string) => {
         onUpdateProjectTaskColor(project.id, color);
+        setShowColorPicker(false);
     };
+
+    // Close popovers when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (
+                calendarRef.current &&
+                !calendarRef.current.contains(event.target as Node) &&
+                calendarButtonRef.current &&
+                !calendarButtonRef.current.contains(event.target as Node)
+            ) {
+                setCalendarOpenForTaskId(null);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -381,654 +377,383 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
                 setShowColorPicker(false);
             }
         };
-
-        if (showColorPicker) {
-            document.addEventListener('mousedown', handleClickOutside);
-        }
-
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, [showColorPicker]);
-
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (
-                calendarRef.current &&
-                !calendarRef.current.contains(event.target as Node) &&
-                calendarButtonRef.current &&
-                !calendarButtonRef.current.contains(event.target as Node)
-            ) {
-                setCalendarOpenForTaskId(null);
-            }
-        };
-
-        if (calendarOpenForTaskId) {
-            document.addEventListener('mousedown', handleClickOutside);
-        }
-
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, [calendarOpenForTaskId]);
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     const toggleShowCompleted = (taskId: string) => {
         setShowCompleted((prev) => ({ ...prev, [taskId]: !prev[taskId] }));
     };
 
-    const projectLaneStyle = {
-        borderTop: `5px solid ${project.taskColor || '#ccc'}`, // Use project.taskColor for top border
-        borderRight: `3px solid ${project.taskColor || '#ccc'}` // Use project.taskColor for top border
-    };
-
-    const taskListStyle = {
-        backgroundColor: project.taskColor ? `${project.taskColor}08` : 'transparent' // Even lighter background for task list
-    };
-
-    const MAX_VISIBLE_AVATARS = 3;
+    const sortedTasks = useMemo(() => {
+        // This sorting can be customized further, e.g., by creation date if available
+        return [...project.tasks].sort((a, b) => a.title.localeCompare(b.title));
+    }, [project.tasks]);
 
     const renderTaskItem = (task: Task, item: TaskItem, isCompletedList: boolean) => (
-        <div
+        <li
             key={item.id}
-            className={`${styles.taskItem} ${isCompletedList ? styles.completedTaskItem : ''}`}
+            className={classNames(styles.taskItem, {
+                [styles.completed]: item.completed,
+                [styles.visible]: !item.completed || isCompletedList
+            })}
+            onDoubleClick={() => handleItemTextDoubleClick(task, item)}
         >
             <input
                 type='checkbox'
                 checked={item.completed}
                 onChange={() => handleToggleTaskItem(task.id, item.id)}
-                className={styles.taskItemCheckbox}
+                className={styles.checkbox}
             />
-            {editingItem && editingItem.taskId === task.id && editingItem.itemId === item.id ? (
+            {editingItem?.itemId === item.id && editingItem.taskId === task.id ? (
                 <input
                     type='text'
                     value={currentEditingItemText}
                     onChange={handleItemTextChange}
                     onBlur={handleItemTextSave}
                     onKeyDown={handleItemTextKeyDown}
+                    className={styles.itemEditInput}
                     autoFocus
-                    className={styles.stickyInput}
                 />
             ) : (
-                <span
-                    className={`${styles.taskItemText} ${
-                        item.completed ? styles.completedItemText : ''
-                    }`}
-                    onDoubleClick={() => handleItemTextDoubleClick(task, item)}
-                >
-                    {item.text}
+                <span className={styles.itemText}>
+                    <Highlight text={item.text} highlight={searchQuery} />
                 </span>
             )}
-            <button
-                onClick={() => handleDeleteItem(task.id, item.id)}
-                className={styles.deleteItemBtn}
-            >
-                ×
-            </button>
-        </div>
+            <Tippy content='Delete Item' placement='right'>
+                <button
+                    onClick={() => handleDeleteItem(task.id, item.id)}
+                    className={styles.deleteItemButton}
+                >
+                    <FontAwesomeIcon icon={faTimes} />
+                </button>
+            </Tippy>
+        </li>
     );
 
     return (
-        <div ref={laneRef}>
-            <div
-                className={styles.projectLaneContainer}
-                style={{ borderRightColor: project.taskColor }}
-            >
-                <div className={`${styles.projectHeader} project-drag-handle`}>
-                    <div className={styles.projectTitleContainer}>
-                        {isEditingProjectTitle ? (
-                            <input
-                                type='text'
-                                value={editingProjectTitle}
-                                onChange={handleProjectTitleChange}
-                                onBlur={handleProjectTitleSave}
-                                onKeyDown={handleProjectTitleKeyDown}
-                                className={classNames(styles.stickyInput, styles.projectTitleInput)}
-                                autoFocus
-                            />
-                        ) : (
-                            <Tippy
-                                content='Double-click to edit title'
-                                placement='top-start'
-                                theme='material'
+        <div ref={laneRef} className={styles.projectLane}>
+            <header className={classNames(styles.projectHeader, 'project-drag-handle')}>
+                {isEditingProjectTitle ? (
+                    <input
+                        type='text'
+                        value={editingProjectTitle}
+                        onChange={handleProjectTitleChange}
+                        onBlur={handleProjectTitleSave}
+                        onKeyDown={handleProjectTitleKeyDown}
+                        className={styles.projectTitleInput}
+                        autoFocus
+                    />
+                ) : (
+                    <h2
+                        className={styles.projectTitle}
+                        onDoubleClick={handleProjectTitleDoubleClick}
+                        title='Double-click to edit'
+                    >
+                        <Highlight text={project.title} highlight={searchQuery} />
+                    </h2>
+                )}
+                <div className={styles.projectControls}>
+                    <Tippy content='Edit Title' placement='top'>
+                        <button
+                            onClick={handleProjectTitleEditClick}
+                            className={styles.controlButton}
+                        >
+                            <FontAwesomeIcon icon={faEdit} />
+                        </button>
+                    </Tippy>
+                    <Tippy content='Project Settings' placement='top'>
+                        <button
+                            ref={colorPickerButtonRef}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                const rect = e.currentTarget.getBoundingClientRect();
+                                setColorPickerPosition({
+                                    top: rect.bottom + window.scrollY,
+                                    left: rect.left + window.scrollX
+                                });
+                                setShowColorPicker(!showColorPicker);
+                            }}
+                            className={styles.controlButton}
+                        >
+                            <FontAwesomeIcon icon={faPalette} />
+                        </button>
+                    </Tippy>
+
+                    {showColorPicker &&
+                        ReactDOM.createPortal(
+                            <div
+                                ref={colorPickerPopoverRef}
+                                className={styles.colorPickerPopover}
+                                style={{
+                                    position: 'absolute',
+                                    top: `${colorPickerPosition.top}px`,
+                                    left: `${colorPickerPosition.left}px`
+                                }}
+                                onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside
                             >
-                                <h2
-                                    className={styles.projectTitle}
-                                    onDoubleClick={handleProjectTitleDoubleClick}
-                                >
-                                    {project.title}
-                                </h2>
-                            </Tippy>
-                        )}
-                        {!isEditingProjectTitle && (
-                            <>
-                                <Tippy
-                                    content='Edit Project Title'
-                                    placement='top'
-                                    theme='material'
-                                >
+                                <div className={styles.colorPickerWrap}>
+                                    <HexColorPicker
+                                        color={project.taskColor}
+                                        onChange={handleSetProjectTaskColor}
+                                    />
+                                    <div className={styles.predefinedColors}>
+                                        {PREDEFINED_TASK_COLORS.map((color) => (
+                                            <button
+                                                key={color}
+                                                className={styles.predefinedColor}
+                                                style={{ backgroundColor: color }}
+                                                onClick={() => handleSetProjectTaskColor(color)}
+                                            />
+                                        ))}
+                                    </div>
                                     <button
-                                        onClick={handleProjectTitleEditClick}
-                                        className={styles.editProjectBtn}
+                                        className={styles.resetColorButton}
+                                        onClick={() => handleSetProjectTaskColor(undefined)}
                                     >
-                                        <FontAwesomeIcon icon={faEdit} />
+                                        Reset to Default
+                                    </button>
+                                </div>
+                            </div>,
+                            document.body
+                        )}
+                    <Tippy content='Delete Project' placement='top'>
+                        <button
+                            onClick={() => onDeleteProject(project.id)}
+                            className={styles.controlButton}
+                        >
+                            <FontAwesomeIcon icon={faTrashAlt} />
+                        </button>
+                    </Tippy>
+                </div>
+            </header>
+
+            <div className={styles.tasksContainer}>
+                {sortedTasks.map((task) => {
+                    const completedItems = task.items.filter((item) => item.completed);
+                    const incompleteItems = task.items.filter((item) => !item.completed);
+                    const assignedPeople = task.assignedPersons
+                        .map(getPersonById)
+                        .filter((p): p is Person => p !== undefined);
+                    const reminderDate = task.reminder ? new Date(task.reminder) : null;
+                    const isReminderSet = reminderDate !== null;
+
+                    return (
+                        <div key={task.id} className={styles.taskCard}>
+                            <div
+                                className={styles.taskTitleContainer}
+                                onDoubleClick={() => handleTaskTitleDoubleClick(task)}
+                                title='Double-click to edit task title'
+                            >
+                                {editingTaskId === task.id ? (
+                                    <input
+                                        type='text'
+                                        value={currentEditingTaskTitle}
+                                        onChange={handleTaskTitleChange}
+                                        onBlur={() => handleTaskTitleSave(task.id)}
+                                        onKeyDown={(e) => handleTaskTitleKeyDown(e, task.id)}
+                                        className={styles.taskTitleInput}
+                                        autoFocus
+                                    />
+                                ) : (
+                                    <h3
+                                        style={{
+                                            color: task.color || project.taskColor || '#333'
+                                        }}
+                                    >
+                                        <Highlight text={task.title} highlight={searchQuery} />
+                                    </h3>
+                                )}
+                            </div>
+                            <div className={styles.taskControls}>
+                                <Tippy content='Tag Person' placement='top'>
+                                    <button
+                                        onClick={() => handleOpenPersonTagging(task.id)}
+                                        className={styles.taskControlButton}
+                                    >
+                                        <FontAwesomeIcon icon={faTag} />
                                     </button>
                                 </Tippy>
+
                                 <Tippy
-                                    content='Change Project Color'
+                                    content={
+                                        isReminderSet
+                                            ? `Reminder: ${format(reminderDate as Date, 'PPP p')}`
+                                            : 'Set Reminder'
+                                    }
                                     placement='top'
-                                    theme='material'
                                 >
-                                    <div className={styles.colorPickerContainer}>
-                                        <button
-                                            ref={colorPickerButtonRef}
-                                            onClick={() => {
-                                                if (colorPickerButtonRef.current) {
-                                                    const rect =
-                                                        colorPickerButtonRef.current.getBoundingClientRect();
-                                                    setColorPickerPosition({
-                                                        top: rect.bottom + window.scrollY + 5,
-                                                        left: rect.left + window.scrollX
-                                                    });
-                                                }
-                                                setShowColorPicker(!showColorPicker);
-                                            }}
-                                            className={styles.editProjectBtn}
-                                        >
-                                            <FontAwesomeIcon icon={faPalette} />
-                                        </button>
-                                    </div>
-                                </Tippy>
-                                <Tippy content='Delete Project' placement='top' theme='material'>
                                     <button
-                                        onClick={() => onDeleteProject(project.id)}
-                                        className={styles.editProjectBtn}
+                                        ref={calendarButtonRef}
+                                        onClick={(e) => {
+                                            const rect = e.currentTarget.getBoundingClientRect();
+                                            setCalendarPosition({
+                                                top: rect.bottom + window.scrollY,
+                                                left: rect.left + window.scrollX
+                                            });
+                                            setCalendarOpenForTaskId(
+                                                task.id === calendarOpenForTaskId ? null : task.id
+                                            );
+                                        }}
+                                        className={classNames(styles.taskControlButton, {
+                                            [styles.reminderSet]: isReminderSet
+                                        })}
+                                    >
+                                        <FontAwesomeIcon icon={faCalendarAlt} />
+                                    </button>
+                                </Tippy>
+                                {calendarOpenForTaskId === task.id &&
+                                    ReactDOM.createPortal(
+                                        <div
+                                            ref={calendarRef}
+                                            style={{
+                                                position: 'absolute',
+                                                top: `${calendarPosition.top}px`,
+                                                left: `${calendarPosition.left}px`,
+                                                zIndex: 1050
+                                            }}
+                                        >
+                                            <div className={styles.calendarContainer}>
+                                                <Calendar
+                                                    onChange={(value) =>
+                                                        handleReminderChange(value as Date, task.id)
+                                                    }
+                                                    value={reminderDate}
+                                                />
+                                                <button
+                                                    onClick={() => handleClearReminder(task.id)}
+                                                >
+                                                    Clear Reminder
+                                                </button>
+                                            </div>
+                                        </div>,
+                                        document.body
+                                    )}
+
+                                <Tippy content='Delete Task' placement='top'>
+                                    <button
+                                        onClick={() => onDeleteTask(project.id, task.id)}
+                                        className={styles.taskControlButton}
                                     >
                                         <FontAwesomeIcon icon={faTrashAlt} />
                                     </button>
                                 </Tippy>
-                            </>
-                        )}
-                    </div>
-                </div>
+                            </div>
 
-                <form onSubmit={handleAddNewTask} className={styles.addTaskForm}>
-                    <input
-                        type='text'
-                        value={newTaskTitle}
-                        onChange={handleNewTaskChange}
-                        placeholder='Add new task...'
-                        className={styles.stickyInput}
-                    />
-                    <Tippy content='Add Task' placement='top' theme='material'>
-                        <button type='submit' className={styles.addPersonBtn}>
-                            <FontAwesomeIcon icon={faPlus} />
-                        </button>
-                    </Tippy>
-                </form>
-
-                <div className={styles.taskList} style={taskListStyle}>
-                    {project.tasks.map((task) => {
-                        const assignedPeopleDetails = getAssignedPeopleDetails(task.id);
-
-                        return (
-                            <div
-                                key={task.id}
-                                className={styles.taskCard}
-                                style={{ backgroundColor: project.taskColor || '#f0f0f0' }}
-                            >
-                                <div className={styles.taskHeader}>
-                                    {editingTaskId === task.id ? (
-                                        <input
-                                            type='text'
-                                            value={currentEditingTaskTitle}
-                                            onChange={handleTaskTitleChange}
-                                            onBlur={() => handleTaskTitleSave(task.id)}
-                                            onKeyDown={(e) => handleTaskTitleKeyDown(e, task.id)}
-                                            autoFocus
-                                            className={styles.taskTitleInput}
-                                        />
-                                    ) : (
-                                        <Tippy
-                                            content='Double-click to edit task title'
-                                            placement='top-start'
-                                            theme='material'
-                                        >
-                                            <h3
-                                                className={styles.taskTitle}
-                                                onDoubleClick={() =>
-                                                    handleTaskTitleDoubleClick(task)
-                                                }
-                                            >
-                                                {task.title}
-                                            </h3>
-                                        </Tippy>
-                                    )}
-                                    <Tippy content='Delete Task' placement='top' theme='material'>
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                onDeleteTask(project.id, task.id);
-                                            }}
-                                            className={styles.deleteTaskBtn}
-                                        >
-                                            <FontAwesomeIcon icon={faTimes} />
-                                        </button>
-                                    </Tippy>
-                                </div>
-
-                                {/* Task Items */}
-                                <div className={styles.taskItemsContainer}>
-                                    {task.items
-                                        .filter((item) => !item.completed)
-                                        .map((item) => renderTaskItem(task, item, false))}
-                                </div>
-
-                                {/* Completed Items Section */}
-                                {task.items.some((i) => i.completed) && (
-                                    <details
-                                        className={styles.completedSectionDetails}
-                                        onToggle={() => toggleShowCompleted(task.id)}
-                                    >
-                                        <Tippy
-                                            content={
-                                                showCompleted[task.id]
-                                                    ? 'Hide completed items'
-                                                    : 'Show completed items'
-                                            }
-                                            placement='top-start'
-                                            theme='material'
-                                        >
-                                            <summary className={styles.completedSectionSummary}>
-                                                Completed (
-                                                {task.items.filter((i) => i.completed).length})
-                                            </summary>
-                                        </Tippy>
-                                        {showCompleted[task.id] && (
-                                            <div className={styles.completedItemsContainer}>
-                                                {task.items
-                                                    .filter((item) => item.completed)
-                                                    .map((item) =>
-                                                        renderTaskItem(task, item, true)
-                                                    )}
-                                            </div>
-                                        )}
-                                    </details>
-                                )}
-
-                                {/* Add New Task Item Form */}
-                                <div className={styles.addItemForm}>
+                            {taggingPersonTaskId === task.id && (
+                                <div className={styles.personTagging}>
                                     <input
                                         type='text'
-                                        placeholder='Add item...'
-                                        value={newItemText[task.id] || ''}
-                                        onChange={(e) =>
-                                            handleNewItemChange(task.id, e.target.value)
-                                        }
-                                        onKeyDown={(e) =>
-                                            e.key === 'Enter' && handleAddNewItem(e, task.id)
-                                        }
-                                        className={styles.stickyInput}
+                                        value={personNameInput}
+                                        onChange={handlePersonNameInputChange}
+                                        placeholder='Tag person...'
+                                        autoFocus
                                     />
-                                    <Tippy content='Add Item' placement='right' theme='material'>
+                                    {personSuggestions.length > 0 && (
+                                        <ul className={styles.suggestionsList}>
+                                            {personSuggestions.map((p) => (
+                                                <li
+                                                    key={p.id}
+                                                    onClick={() =>
+                                                        handleAssignPerson(task.id, p.id)
+                                                    }
+                                                >
+                                                    {p.name}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )}
+                                    {personNameInput && (
                                         <button
-                                            type='submit'
-                                            className={styles.addItemBtn}
-                                            onClick={(e) => handleAddNewItem(e, task.id)}
+                                            onClick={() => handleCreateAndAssignPerson(task.id)}
                                         >
-                                            <FontAwesomeIcon icon={faPlus} />
+                                            Create & Assign "{personNameInput}"
                                         </button>
-                                    </Tippy>
-                                </div>
-
-                                {/* Person Tagging UI */}
-                                <div className={styles.taskFooter}>
-                                    <div className={styles.mainActionsRow}>
-                                        <div className={styles.avatarsDisplayContainer}>
-                                            {assignedPeopleDetails
-                                                .slice(0, MAX_VISIBLE_AVATARS)
-                                                .map((person) => (
-                                                    <Tippy
-                                                        content={`Assigned to ${person.name}. Click to remove.`}
-                                                        key={person.id}
-                                                        placement='top'
-                                                        theme='material'
-                                                    >
-                                                        <div
-                                                            className={styles.personAvatar}
-                                                            onClick={() =>
-                                                                handleRemovePersonFromTask(
-                                                                    task.id,
-                                                                    person.id
-                                                                )
-                                                            }
-                                                        >
-                                                            {person.initials}
-                                                        </div>
-                                                    </Tippy>
-                                                ))}
-                                            {assignedPeopleDetails.length > MAX_VISIBLE_AVATARS && (
-                                                <Tippy
-                                                    content={`+${
-                                                        assignedPeopleDetails.length -
-                                                        MAX_VISIBLE_AVATARS
-                                                    } more`}
-                                                    placement='top'
-                                                    theme='material'
-                                                >
-                                                    <div
-                                                        className={`${styles.personAvatar} ${styles.overflowAvatar}`}
-                                                    >
-                                                        +
-                                                        {assignedPeopleDetails.length -
-                                                            MAX_VISIBLE_AVATARS}
-                                                    </div>
-                                                </Tippy>
-                                            )}
-                                        </div>
-
-                                        <div className={styles.actionButtonsGroup}>
-                                            <Tippy
-                                                content='Assign Person'
-                                                placement='top'
-                                                theme='material'
-                                            >
-                                                <button
-                                                    onClick={() => handleOpenPersonTagging(task.id)}
-                                                    className={styles.addPersonBtn}
-                                                >
-                                                    <FontAwesomeIcon icon={faTag} />
-                                                </button>
-                                            </Tippy>
-
-                                            {/* Reminder Button/Input grouped into a new div */}
-                                            <div className={styles.reminderSection}>
-                                                {editingReminderTaskId === task.id && (
-                                                    <div className={styles.datepickerContainer}>
-                                                        <DateTimePicker
-                                                            onChange={(newDate: Date | null) => {
-                                                                onUpdateTask(project.id, task.id, {
-                                                                    reminder: newDate
-                                                                        ? newDate.toISOString()
-                                                                        : undefined
-                                                                });
-                                                                setEditingReminderTaskId(null);
-                                                            }}
-                                                            value={
-                                                                task.reminder
-                                                                    ? new Date(task.reminder)
-                                                                    : null
-                                                            }
-                                                            locale='en-US'
-                                                            minDate={new Date()}
-                                                            format='MM/dd/yyyy h:mm a'
-                                                            disableCalendar={true}
-                                                            disableClock={false}
-                                                        />
-                                                        <Tippy
-                                                            content='Open Calendar'
-                                                            placement='top'
-                                                            theme='material'
-                                                        >
-                                                            <button
-                                                                ref={calendarButtonRef}
-                                                                onClick={(e) => {
-                                                                    const container = (
-                                                                        e.currentTarget as HTMLElement
-                                                                    ).closest(
-                                                                        `.${styles.datepickerContainer}`
-                                                                    );
-                                                                    if (container) {
-                                                                        const rect =
-                                                                            container.getBoundingClientRect();
-                                                                        setCalendarPosition({
-                                                                            top:
-                                                                                rect.bottom +
-                                                                                window.scrollY,
-                                                                            left:
-                                                                                rect.left +
-                                                                                window.scrollX
-                                                                        });
-                                                                    }
-                                                                    setCalendarOpenForTaskId(
-                                                                        calendarOpenForTaskId ===
-                                                                            task.id
-                                                                            ? null
-                                                                            : task.id
-                                                                    );
-                                                                }}
-                                                                className={styles.calendarToggleBtn}
-                                                            >
-                                                                <FontAwesomeIcon
-                                                                    icon={faCalendarAlt}
-                                                                />
-                                                            </button>
-                                                        </Tippy>
-                                                    </div>
-                                                )}
-
-                                                {!editingReminderTaskId ||
-                                                editingReminderTaskId !== task.id ? (
-                                                    task.reminder ? (
-                                                        <div
-                                                            className={styles.reminderSetContainer}
-                                                        >
-                                                            <Tippy
-                                                                content='Edit Reminder'
-                                                                placement='top'
-                                                                theme='material'
-                                                            >
-                                                                <span
-                                                                    className={styles.reminderText}
-                                                                    onClick={() =>
-                                                                        handleReminderIconClick(
-                                                                            task
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    <FontAwesomeIcon
-                                                                        icon={faBell}
-                                                                        style={{
-                                                                            marginRight: '5px'
-                                                                        }}
-                                                                    />
-                                                                    {format(
-                                                                        new Date(task.reminder),
-                                                                        'MM/dd hh:mm aa'
-                                                                    )}
-                                                                </span>
-                                                            </Tippy>
-                                                            <Tippy
-                                                                content='Clear Reminder'
-                                                                placement='top'
-                                                                theme='material'
-                                                            >
-                                                                <button
-                                                                    onClick={() =>
-                                                                        handleClearReminder(task.id)
-                                                                    }
-                                                                    className={
-                                                                        styles.clearReminderBtnInline
-                                                                    }
-                                                                >
-                                                                    <FontAwesomeIcon
-                                                                        icon={faTimes}
-                                                                        size='sm'
-                                                                    />
-                                                                </button>
-                                                            </Tippy>
-                                                        </div>
-                                                    ) : (
-                                                        <Tippy
-                                                            content='Set Reminder'
-                                                            placement='top'
-                                                            theme='material'
-                                                        >
-                                                            <button
-                                                                onClick={() =>
-                                                                    handleReminderIconClick(task)
-                                                                }
-                                                                className={styles.reminderIconBtn}
-                                                            >
-                                                                <FontAwesomeIcon
-                                                                    icon={faBellSlash}
-                                                                />
-                                                            </button>
-                                                        </Tippy>
-                                                    )
-                                                ) : null}
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {taggingPersonTaskId === task.id && (
-                                        <div className={styles.personTaggingPopup}>
-                                            <input
-                                                type='text'
-                                                placeholder="Person's name..."
-                                                value={personNameInput}
-                                                onChange={handlePersonNameInputChange}
-                                                onKeyDown={(e) =>
-                                                    e.key === 'Enter' &&
-                                                    handleCreateAndAssignPerson(task.id)
-                                                }
-                                                className={styles.personNameInput}
-                                                autoFocus
-                                            />
-                                            {personSuggestions.length > 0 && (
-                                                <ul className={styles.personSuggestionsList}>
-                                                    {personSuggestions.map((p) => (
-                                                        <li
-                                                            key={p.id}
-                                                            onClick={() =>
-                                                                handleAssignPerson(task.id, p.id)
-                                                            }
-                                                        >
-                                                            {p.name}
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            )}
-                                            <div className={styles.personTaggingActions}>
-                                                <Tippy
-                                                    content='Add and Assign'
-                                                    placement='bottom'
-                                                    theme='material'
-                                                >
-                                                    <button
-                                                        onClick={() =>
-                                                            handleCreateAndAssignPerson(task.id)
-                                                        }
-                                                        className={styles.confirmAddPersonBtn}
-                                                    >
-                                                        <FontAwesomeIcon icon={faPlus} /> Add &
-                                                        Assign
-                                                    </button>
-                                                </Tippy>
-                                                <Tippy
-                                                    content='Cancel'
-                                                    placement='bottom'
-                                                    theme='material'
-                                                >
-                                                    <button
-                                                        onClick={() => setTaggingPersonTaskId(null)}
-                                                        className={styles.cancelAddPersonBtn}
-                                                    >
-                                                        <FontAwesomeIcon icon={faTimes} /> Cancel
-                                                    </button>
-                                                </Tippy>
-                                            </div>
-                                        </div>
                                     )}
                                 </div>
+                            )}
+
+                            <div className={styles.assignedPeople}>
+                                {assignedPeople.slice(0, MAX_VISIBLE_AVATARS).map((person) => (
+                                    <Tippy key={person.id} content={person.name} placement='top'>
+                                        <div
+                                            className={styles.avatar}
+                                            onClick={() =>
+                                                handleRemovePersonFromTask(task.id, person.id)
+                                            }
+                                        >
+                                            {person.initials}
+                                        </div>
+                                    </Tippy>
+                                ))}
+                                {assignedPeople.length > MAX_VISIBLE_AVATARS && (
+                                    <Tippy
+                                        content={assignedPeople
+                                            .slice(MAX_VISIBLE_AVATARS)
+                                            .map((p) => p.name)
+                                            .join(', ')}
+                                        placement='top'
+                                    >
+                                        <div className={styles.avatar}>
+                                            +{assignedPeople.length - MAX_VISIBLE_AVATARS}
+                                        </div>
+                                    </Tippy>
+                                )}
                             </div>
-                        );
-                    })}
-                    {project.tasks.length === 0 && (
-                        <p className={styles.noTasksMessage}>No tasks yet. Add one below!</p>
-                    )}
-                </div>
-            </div>
-            {showColorPicker &&
-                ReactDOM.createPortal(
-                    <div
-                        ref={colorPickerPopoverRef}
-                        style={{
-                            position: 'absolute',
-                            top: `${colorPickerPosition.top}px`,
-                            left: `${colorPickerPosition.left}px`,
-                            zIndex: 1060
-                        }}
-                        className={styles.colorPickerPopover}
-                    >
-                        <HexColorPicker
-                            color={project.taskColor || '#ffffff'}
-                            onChange={handleSetProjectTaskColor}
-                        />
-                        <div className={styles.predefinedColors}>
-                            {PREDEFINED_TASK_COLORS.map((color) => (
-                                <button
-                                    key={color}
-                                    style={{ backgroundColor: color }}
-                                    className={styles.colorOption}
-                                    onClick={() => handleSetProjectTaskColor(color)}
+
+                            <ul className={styles.taskItemsList}>
+                                {incompleteItems.map((item) => renderTaskItem(task, item, false))}
+                            </ul>
+
+                            {completedItems.length > 0 && (
+                                <div className={styles.completedItemsSection}>
+                                    <button
+                                        onClick={() => toggleShowCompleted(task.id)}
+                                        className={styles.toggleCompletedButton}
+                                    >
+                                        {showCompleted[task.id] ? 'Hide' : 'Show'}{' '}
+                                        {completedItems.length} Completed Item(s)
+                                    </button>
+                                    {showCompleted[task.id] && (
+                                        <ul className={styles.taskItemsList}>
+                                            {completedItems.map((item) =>
+                                                renderTaskItem(task, item, true)
+                                            )}
+                                        </ul>
+                                    )}
+                                </div>
+                            )}
+
+                            <form
+                                onSubmit={(e) => handleAddNewItem(e, task.id)}
+                                className={styles.newItemForm}
+                            >
+                                <input
+                                    type='text'
+                                    value={newItemText[task.id] || ''}
+                                    onChange={(e) => handleNewItemChange(task.id, e.target.value)}
+                                    placeholder='+ Add an item'
+                                    className={styles.newItemInput}
                                 />
-                            ))}
+                                <button type='submit'>Add</button>
+                            </form>
                         </div>
-                        <button
-                            className={styles.clearColorButton}
-                            onClick={() => handleSetProjectTaskColor(undefined)}
-                        >
-                            Clear Color
-                        </button>
-                    </div>,
-                    document.body
-                )}
-            {calendarOpenForTaskId &&
-                ReactDOM.createPortal(
-                    <div
-                        ref={calendarRef}
-                        style={{
-                            position: 'absolute',
-                            top: `${calendarPosition.top}px`,
-                            left: `${calendarPosition.left}px`,
-                            zIndex: 1050
-                        }}
-                    >
-                        <Calendar
-                            onChange={(date: any) => {
-                                const task = project.tasks.find(
-                                    (t) => t.id === calendarOpenForTaskId
-                                );
-                                if (task) {
-                                    const newDate = new Date(date);
-                                    const existingReminder = task.reminder
-                                        ? new Date(task.reminder)
-                                        : new Date();
+                    );
+                })}
+            </div>
 
-                                    newDate.setHours(existingReminder.getHours());
-                                    newDate.setMinutes(existingReminder.getMinutes());
-                                    newDate.setSeconds(existingReminder.getSeconds());
-
-                                    onUpdateTask(project.id, task.id, {
-                                        reminder: newDate.toISOString()
-                                    });
-                                }
-                                setCalendarOpenForTaskId(null);
-                            }}
-                            value={
-                                project.tasks.find((t) => t.id === calendarOpenForTaskId)?.reminder
-                                    ? new Date(
-                                          project.tasks.find(
-                                              (t) => t.id === calendarOpenForTaskId
-                                          )!.reminder!
-                                      )
-                                    : null
-                            }
-                            minDate={new Date()}
-                        />
-                    </div>,
-                    document.body
-                )}
+            <form onSubmit={handleAddNewTask} className={styles.newTaskForm}>
+                <input
+                    type='text'
+                    value={newTaskTitle}
+                    onChange={handleNewTaskChange}
+                    placeholder='+ Add new task'
+                    className={styles.newTaskInput}
+                />
+                <button type='submit' className={styles.newTaskButton}>
+                    Add Task
+                </button>
+            </form>
         </div>
     );
 };

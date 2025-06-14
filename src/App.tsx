@@ -84,6 +84,7 @@ const App: FC = () => {
     const [dataLoaded, setDataLoaded] = useState(false);
     // const [initialLoadHasProjects, setInitialLoadHasProjects] = useState<boolean>(false); // THIS WAS THE UNUSED VARIABLE IDENTIFIED IN THE BUILD OUTPUT
     const [globalPeople, setGlobalPeople] = useState<Person[]>(initialGlobalPeople); // New state for people
+    const [searchQuery, setSearchQuery] = useState('');
     // const [isModalOpen, setIsModalOpen] = useState(false); // This was NOT part of the original App.tsx, it was currentProject from the old version
     // const [currentProject, setCurrentProject] = useState<Project | null>(null); // This was NOT part of the original App.tsx
     // const [selectedWallpaper, setSelectedWallpaper] = useState<string>(() => { // This was NOT part of the original App.tsx
@@ -374,12 +375,32 @@ const App: FC = () => {
         return newPerson.id;
     };
 
+    const handleSearch = (query: string) => {
+        setSearchQuery(query);
+    };
+
+    const filteredProjects = projects.filter((project) => {
+        if (!searchQuery) return true;
+        const query = searchQuery.toLowerCase();
+
+        const projectTitleMatch = project.title.toLowerCase().includes(query);
+
+        const taskMatch = project.tasks.some(
+            (task) =>
+                task.title.toLowerCase().includes(query) ||
+                task.items.some((item) => item.text.toLowerCase().includes(query))
+        );
+
+        return projectTitleMatch || taskMatch;
+    });
+
     return (
         <>
             <NotificationManager projects={projects} />
             <AppHeader
                 onAddProject={handleAddProject}
                 onOpenPreferences={() => setIsPreferencesOpen(true)}
+                onSearch={handleSearch}
             />
             <main
                 className={`${styles.mainContentContainer} ${
@@ -400,7 +421,7 @@ const App: FC = () => {
                         draggableHandle='.project-drag-handle'
                         onLayoutChange={handleLayoutChange}
                     >
-                        {projects.map((project) => (
+                        {filteredProjects.map((project) => (
                             <div key={project.id}>
                                 <ProjectLane
                                     project={project}
@@ -414,6 +435,7 @@ const App: FC = () => {
                                     onUpdateProjectTaskColor={handleUpdateProjectTaskColor}
                                     rowHeight={30}
                                     onHeightChange={handleHeightChange}
+                                    searchQuery={searchQuery}
                                 />
                             </div>
                         ))}

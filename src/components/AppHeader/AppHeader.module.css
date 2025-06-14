@@ -26,6 +26,34 @@
     gap: 10px; /* Add gap between control buttons */
 }
 
+.searchContainer {
+    display: flex;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 0;
+    transition: all 0.3s ease-in-out;
+}
+
+.searchInput {
+    background: transparent;
+    border: none;
+    color: white;
+    outline: none;
+    width: 0;
+    padding: 5px 0;
+    transition: width 0.3s ease-in-out, padding 0.3s ease-in-out;
+}
+
+.searchInput::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.searchInputOpen {
+    width: 200px;
+    padding: 5px 10px;
+}
+
 /* General style for control buttons */
 .controlButton {
     background: none;
