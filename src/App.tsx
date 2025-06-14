@@ -77,6 +77,7 @@ const App: FC = () => {
     const [dataLoaded, setDataLoaded] = useState(false);
     // const [initialLoadHasProjects, setInitialLoadHasProjects] = useState<boolean>(false); // THIS WAS THE UNUSED VARIABLE IDENTIFIED IN THE BUILD OUTPUT
     const [globalPeople, setGlobalPeople] = useState<Person[]>(initialGlobalPeople); // New state for people
+    const [searchTerm, setSearchTerm] = useState<string>(''); // New state for search
     // const [isModalOpen, setIsModalOpen] = useState(false); // This was NOT part of the original App.tsx, it was currentProject from the old version
     // const [currentProject, setCurrentProject] = useState<Project | null>(null); // This was NOT part of the original App.tsx
     // const [selectedWallpaper, setSelectedWallpaper] = useState<string>(() => { // This was NOT part of the original App.tsx
@@ -305,11 +306,24 @@ const App: FC = () => {
         return newPerson.id;
     };
 
+    const handleSearchChange = (newSearchTerm: string) => {
+        setSearchTerm(newSearchTerm.toLowerCase());
+    };
+
+    const filteredProjects = projects.filter((project) => {
+        const projectTitleMatch = project.title.toLowerCase().includes(searchTerm);
+        const taskMatch = project.tasks.some((task) =>
+            task.title.toLowerCase().includes(searchTerm)
+        );
+        return projectTitleMatch || taskMatch;
+    });
+
     return (
         <>
             <AppHeader
                 onOpenPreferences={() => setIsPreferencesOpen(true)}
                 onAddProject={handleAddProject}
+                onSearchChange={handleSearchChange}
             />
             <main
                 className={`${styles.mainContentContainer} ${
@@ -321,7 +335,7 @@ const App: FC = () => {
                         No projects available. Click the '+' button to add a new project.
                     </div>
                 ) : (
-                    projects.map((project) => (
+                    filteredProjects.map((project) => (
                         <ProjectLane
                             key={project.id}
                             project={project}
@@ -333,6 +347,7 @@ const App: FC = () => {
                             onAddTask={handleAddTask}
                             onDeleteTask={handleDeleteTask}
                             onUpdateProjectTaskColor={handleUpdateProjectTaskColor}
+                            highlightTerm={searchTerm}
                         />
                     ))
                 )}

@@ -38,6 +38,7 @@ interface ProjectLaneProps {
     ) => void;
     onDeleteTask: (projectId: string, taskId: string) => void;
     onUpdateProjectTaskColor: (projectId: string, color?: string) => void;
+    highlightTerm?: string;
 }
 
 const PREDEFINED_TASK_COLORS = [
@@ -62,7 +63,8 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
     onAddTask,
     onUpdateTask,
     onDeleteTask,
-    onUpdateProjectTaskColor
+    onUpdateProjectTaskColor,
+    highlightTerm
 }) => {
     const [isEditingProjectTitle, setIsEditingProjectTitle] = useState(false);
     const [editingProjectTitle, setEditingProjectTitle] = useState(project.title);
@@ -98,6 +100,25 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
     const colorPickerPopoverRef = useRef<HTMLDivElement>(null);
     const colorPickerButtonRef = useRef<HTMLButtonElement>(null);
     const [colorPickerPosition, setColorPickerPosition] = useState({ top: 0, left: 0 });
+
+    const highlight = (text: string, term?: string) => {
+        if (!term) return text;
+        const regex = new RegExp(`(${term})`, 'gi');
+        const parts = text.split(regex);
+        return (
+            <span>
+                {parts.map((part, i) =>
+                    regex.test(part) ? (
+                        <strong key={i} className={styles.highlight}>
+                            {part}
+                        </strong>
+                    ) : (
+                        part
+                    )
+                )}
+            </span>
+        );
+    };
 
     useEffect(() => {
         if (taggingPersonTaskId && personNameInput) {
@@ -464,7 +485,7 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
                                 className={styles.projectTitle}
                                 onDoubleClick={handleProjectTitleDoubleClick}
                             >
-                                {project.title}
+                                {highlight(project.title, highlightTerm)}
                             </h2>
                         </Tippy>
                     )}
@@ -558,7 +579,7 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
                                             className={styles.taskTitle}
                                             onDoubleClick={() => handleTaskTitleDoubleClick(task)}
                                         >
-                                            {task.title}
+                                            {highlight(task.title, highlightTerm)}
                                         </h3>
                                     </Tippy>
                                 )}
