@@ -31,8 +31,14 @@
 
 /* To ensure the arrow is not shown if you prefer a more minimal Material look */
 /* Uncomment the following to hide the arrow for the material theme */
-/*
 .tippy-box[data-theme~='material'] > .tippy-arrow {
     display: none;
 }
-*/
+
+/* Override for react-grid-layout placeholder */
+.react-grid-placeholder {
+    background: rgba(0, 0, 0, 0.4) !important;
+    border-radius: 4px;
+    opacity: 1 !important;
+    width: 300px !important;
+}
