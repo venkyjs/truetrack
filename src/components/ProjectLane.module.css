@@ -838,3 +838,14 @@
 .clearColorButton:hover {
     background-color: #666;
 }
+
+.task-list {
+    flex-grow: 1;
+    overflow-y: auto; /* Ensure task list is scrollable if it gets too long */
+    padding-right: 5px; /* For scrollbar */
+}
+
+.highlight {
+    background-color: rgba(255, 255, 0, 0.5); /* Semi-transparent yellow */
+    font-weight: bold;
+}

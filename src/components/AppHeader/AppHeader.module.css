@@ -39,6 +39,7 @@
     align-items: center;
     justify-content: center;
     transition: background-color 0.2s ease-in-out;
+    /* margin-left: 10px; */ /* Removed for consistent gap */
 }
 
 .controlButton:hover {
@@ -52,4 +53,58 @@
 
 .settingsButton {
     /* Any specific styles for settings button */
+}
+
+/* Search Input Specific Styles */
+.searchContainer {
+    display: flex;
+    align-items: center;
+    position: relative;
+    margin-right: 30px;
+    /* margin-right: 10px; */ /* Removed for consistent gap */
+}
+
+.searchInput {
+    width: 0;
+    padding: 8px 0;
+    border: none;
+    border-radius: 20px;
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+    opacity: 0;
+    transition: width 0.4s ease-in-out, opacity 0.4s ease-in-out, padding 0.4s ease-in-out;
+    outline: none;
+    font-size: 1em;
+}
+
+.searchContainer.searchVisible {
+    margin-right: 0;
+}
+
+.searchContainer.searchVisible .searchInput {
+    width: 250px;
+    opacity: 1;
+    padding: 8px 15px 8px 40px; /* Adjust padding to not overlap with search icon */
+}
+
+.searchButton {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1; /* Ensure button is on top of input */
+    /* margin-left: 0; */ /* Override no longer needed */
+}
+
+.clearSearchButton {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 1.1em;
+    padding: 5px;
 }
