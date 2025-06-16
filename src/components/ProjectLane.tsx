@@ -449,7 +449,7 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
                     }`}
                     onDoubleClick={() => handleItemTextDoubleClick(task, item)}
                 >
-                    {item.text}
+                    {highlight(item.text, highlightTerm)}
                 </span>
             )}
             <button

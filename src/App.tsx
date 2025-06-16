@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import type { FC } from 'react';
 // import { дорога } from './assets'; // Removed unused import causing error
 // Import global types
@@ -16,6 +16,8 @@ import './components/TooltipStyles.css'; // Import custom tooltip styles
 // import WallpaperSelector from './components/WallpaperSelector'; // These were incorrectly added in a previous edit
 // import { wallpapers } from './utils/wallpapers'; // These were incorrectly added in a previous edit
 // import './App.css'; // This was fine
+
+import lunr from 'lunr';
 
 // Removed local type definitions, using global ones imported above
 
@@ -78,11 +80,41 @@ const App: FC = () => {
     // const [initialLoadHasProjects, setInitialLoadHasProjects] = useState<boolean>(false); // THIS WAS THE UNUSED VARIABLE IDENTIFIED IN THE BUILD OUTPUT
     const [globalPeople, setGlobalPeople] = useState<Person[]>(initialGlobalPeople); // New state for people
     const [searchTerm, setSearchTerm] = useState<string>(''); // New state for search
+    const [searchIndex, setSearchIndex] = useState<lunr.Index | null>(null);
     // const [isModalOpen, setIsModalOpen] = useState(false); // This was NOT part of the original App.tsx, it was currentProject from the old version
     // const [currentProject, setCurrentProject] = useState<Project | null>(null); // This was NOT part of the original App.tsx
     // const [selectedWallpaper, setSelectedWallpaper] = useState<string>(() => { // This was NOT part of the original App.tsx
     //     return localStorage.getItem('selectedWallpaper') || wallpapers[0].value;
     // });
+
+    useEffect(() => {
+        if (projects.length > 0) {
+            const idx = lunr(function () {
+                this.ref('id');
+                this.field('title');
+                this.field('tasks');
+                console.log('Building search index with projects:', projects);
+                projects.forEach((project) => {
+                    const data = {
+                        id: project.id,
+                        title: project.title,
+                        tasks: project.tasks
+                            .map((task) => {
+                                let txt = task.title;
+                                if (task.items.length > 0) {
+                                    txt += ` ${task.items.map((item) => item.text).join(' ')}`;
+                                }
+                                return txt;
+                            })
+                            .join(' ')
+                    };
+                    console.log('Adding project:', data);
+                    this.add(data);
+                });
+            });
+            setSearchIndex(idx);
+        }
+    }, [projects]);
 
     // Load initial data from IndexedDB
     useEffect(() => {
@@ -307,16 +339,27 @@ const App: FC = () => {
     };
 
     const handleSearchChange = (newSearchTerm: string) => {
-        setSearchTerm(newSearchTerm.toLowerCase());
+        setSearchTerm(newSearchTerm);
     };
 
-    const filteredProjects = projects.filter((project) => {
-        const projectTitleMatch = project.title.toLowerCase().includes(searchTerm);
-        const taskMatch = project.tasks.some((task) =>
-            task.title.toLowerCase().includes(searchTerm)
-        );
-        return projectTitleMatch || taskMatch;
-    });
+    const searchedProjects = useMemo(() => {
+        if (!searchTerm) {
+            return projects;
+        }
+        if (!searchIndex) {
+            return [];
+        }
+
+        try {
+            const results = searchIndex.search(`*${searchTerm}*`);
+            console.log('Search results:', results);
+            const projectIds = results.map((result) => result.ref);
+            return projects.filter((project) => projectIds.includes(project.id));
+        } catch (e) {
+            console.error('Search error:', e);
+            return [];
+        }
+    }, [searchTerm, projects, searchIndex]);
 
     return (
         <>
@@ -335,7 +378,7 @@ const App: FC = () => {
                         No projects available. Click the '+' button to add a new project.
                     </div>
                 ) : (
-                    filteredProjects.map((project) => (
+                    searchedProjects.map((project) => (
                         <ProjectLane
                             key={project.id}
                             project={project}
