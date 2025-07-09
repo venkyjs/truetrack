@@ -17,7 +17,7 @@
     margin-bottom: 10px;
     border-bottom: 1px solid #eee;
     padding-bottom: 0;
-    background-color: rgba(0, 0, 0, 0.9);
+    background-color: rgba(0, 0, 0, 0.4);
 }
 
 .projectTitleContainer {
@@ -848,4 +848,151 @@
 .highlight {
     background-color: rgba(255, 255, 0, 0.5); /* Semi-transparent yellow */
     font-weight: bold;
+}
+
+/* Edit Dialog Styles */
+.editDialogOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.editDialog {
+    background: white;
+    border-radius: 8px;
+    padding: 0;
+    width: 400px;
+    max-width: 100%;
+    max-height: 100%;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+}
+
+.editDialogHeader {
+    padding: 20px 20px 0 20px;
+    border-bottom: 1px solid #e8e8e8;
+    flex-shrink: 0;
+}
+
+.editDialog h3 {
+    margin: 0 0 20px 0;
+    color: #333;
+    font-size: 1.3em;
+}
+
+.editDialogContent {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px;
+    overflow-y: auto;
+    flex-grow: 1;
+    min-height: 0;
+}
+
+.editDialogField {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.editDialogField label {
+    font-weight: bold;
+    color: #333;
+    font-size: 0.9em;
+}
+
+.editDialogInput {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.9em;
+    outline: none;
+}
+
+.editDialogInput:focus {
+    border-color: #1890ff;
+    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+
+.editDialogSelect {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.9em;
+    outline: none;
+    background-color: white;
+    color: #333;
+}
+
+.editDialogSelect:focus {
+    border-color: #1890ff;
+    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+
+.editDialogSelect option {
+    color: #333;
+    background-color: white;
+}
+
+.editDialogActions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    padding: 20px;
+    border-top: 1px solid #e8e8e8;
+    background-color: #f9f9f9;
+    flex-shrink: 0;
+}
+
+.saveButton {
+    background-color: #1890ff;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background-color 0.2s ease;
+}
+
+.saveButton:hover {
+    background-color: #40a9ff;
+}
+
+.cancelButton {
+    background-color: #f5f5f5;
+    color: #333;
+    border: 1px solid #ddd;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background-color 0.2s ease;
+}
+
+.cancelButton:hover {
+    background-color: #e6e6e6;
+}
+
+.colorPickerSection {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.dialogColorPicker {
+    width: 100%;
+    max-width: 200px;
 }

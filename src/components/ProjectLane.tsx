@@ -2,7 +2,6 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import type { Project, Task, TaskItem, Person } from '../types'; // Assuming types.ts is in the same src folder
 import styles from './ProjectLane.module.css'; // Use CSS module import
-import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
     faEdit,
@@ -38,6 +37,8 @@ interface ProjectLaneProps {
     ) => void;
     onDeleteTask: (projectId: string, taskId: string) => void;
     onUpdateProjectTaskColor: (projectId: string, color?: string) => void;
+    onUpdateProjectPosition: (projectId: string, newPosition: number) => void;
+    totalProjects: number;
     highlightTerm?: string;
 }
 
@@ -64,10 +65,14 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
     onUpdateTask,
     onDeleteTask,
     onUpdateProjectTaskColor,
+    onUpdateProjectPosition,
+    totalProjects,
     highlightTerm
 }) => {
-    const [isEditingProjectTitle, setIsEditingProjectTitle] = useState(false);
-    const [editingProjectTitle, setEditingProjectTitle] = useState(project.title);
+    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+    const [editDialogTitle, setEditDialogTitle] = useState(project.title);
+    const [editDialogColor, setEditDialogColor] = useState(project.taskColor);
+    const [editDialogPosition, setEditDialogPosition] = useState(project.position);
     const [newTaskTitle, setNewTaskTitle] = useState('');
 
     // State for editing individual task titles
@@ -90,16 +95,10 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
 
     const [editingReminderTaskId, setEditingReminderTaskId] = useState<string | null>(null);
 
-    const [showColorPicker, setShowColorPicker] = useState(false);
-
     const [calendarOpenForTaskId, setCalendarOpenForTaskId] = useState<string | null>(null);
     const [calendarPosition, setCalendarPosition] = useState({ top: 0, left: 0 });
     const calendarButtonRef = useRef<HTMLButtonElement>(null);
     const calendarRef = useRef<HTMLDivElement>(null);
-
-    const colorPickerPopoverRef = useRef<HTMLDivElement>(null);
-    const colorPickerButtonRef = useRef<HTMLButtonElement>(null);
-    const [colorPickerPosition, setColorPickerPosition] = useState({ top: 0, left: 0 });
 
     const highlight = (text: string, term?: string) => {
         if (!term) return text;
@@ -130,34 +129,32 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
         }
     }, [personNameInput, people, taggingPersonTaskId]);
 
-    const handleProjectTitleDoubleClick = () => {
-        setIsEditingProjectTitle(true);
-        setEditingProjectTitle(project.title);
-    };
-
-    const handleProjectTitleEditClick = (e: React.MouseEvent) => {
+    const handleOpenEditDialog = (e: React.MouseEvent) => {
         e.stopPropagation();
-        setIsEditingProjectTitle(true);
-        setEditingProjectTitle(project.title);
+        setEditDialogTitle(project.title);
+        setEditDialogColor(project.taskColor);
+        setEditDialogPosition(project.position);
+        setIsEditDialogOpen(true);
     };
 
-    const handleProjectTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setEditingProjectTitle(e.target.value);
+    const handleCloseEditDialog = () => {
+        setIsEditDialogOpen(false);
+        setEditDialogTitle(project.title);
+        setEditDialogColor(project.taskColor);
+        setEditDialogPosition(project.position);
     };
 
-    const handleProjectTitleSave = () => {
-        if (editingProjectTitle.trim() !== '' && editingProjectTitle !== project.title) {
-            onUpdateProjectTitle(project.id, editingProjectTitle.trim());
+    const handleSaveEditDialog = () => {
+        if (editDialogTitle.trim() !== '' && editDialogTitle !== project.title) {
+            onUpdateProjectTitle(project.id, editDialogTitle.trim());
         }
-        setIsEditingProjectTitle(false);
-    };
-
-    const handleProjectTitleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter') handleProjectTitleSave();
-        if (e.key === 'Escape') {
-            setIsEditingProjectTitle(false);
-            setEditingProjectTitle(project.title);
+        if (editDialogColor !== project.taskColor) {
+            onUpdateProjectTaskColor(project.id, editDialogColor);
         }
+        if (editDialogPosition !== project.position) {
+            onUpdateProjectPosition(project.id, editDialogPosition);
+        }
+        setIsEditDialogOpen(false);
     };
 
     const handleNewTaskChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -360,31 +357,6 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
         setEditingReminderTaskId(null);
     };
 
-    const handleSetProjectTaskColor = (color?: string) => {
-        onUpdateProjectTaskColor(project.id, color);
-    };
-
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (
-                colorPickerPopoverRef.current &&
-                !colorPickerPopoverRef.current.contains(event.target as Node) &&
-                colorPickerButtonRef.current &&
-                !colorPickerButtonRef.current.contains(event.target as Node)
-            ) {
-                setShowColorPicker(false);
-            }
-        };
-
-        if (showColorPicker) {
-            document.addEventListener('mousedown', handleClickOutside);
-        }
-
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, [showColorPicker]);
-
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (
@@ -465,71 +437,22 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
         <div className={styles.projectLaneContainer} style={projectLaneStyle}>
             <div className={styles.projectHeader}>
                 <div className={styles.projectTitleContainer}>
-                    {isEditingProjectTitle ? (
-                        <input
-                            type='text'
-                            value={editingProjectTitle}
-                            onChange={handleProjectTitleChange}
-                            onBlur={handleProjectTitleSave}
-                            onKeyDown={handleProjectTitleKeyDown}
-                            className={classNames(styles.stickyInput, styles.projectTitleInput)}
-                            autoFocus
-                        />
-                    ) : (
-                        <Tippy
-                            content='Double-click to edit title'
-                            placement='top-start'
-                            theme='material'
+                    <h2 className={styles.projectTitle}>
+                        {highlight(project.title, highlightTerm)}
+                    </h2>
+                    <Tippy content='Edit Project' placement='top' theme='material'>
+                        <button onClick={handleOpenEditDialog} className={styles.editProjectBtn}>
+                            <FontAwesomeIcon icon={faEdit} />
+                        </button>
+                    </Tippy>
+                    <Tippy content='Delete Project' placement='top' theme='material'>
+                        <button
+                            onClick={() => onDeleteProject(project.id)}
+                            className={styles.editProjectBtn}
                         >
-                            <h2
-                                className={styles.projectTitle}
-                                onDoubleClick={handleProjectTitleDoubleClick}
-                            >
-                                {highlight(project.title, highlightTerm)}
-                            </h2>
-                        </Tippy>
-                    )}
-                    {!isEditingProjectTitle && (
-                        <>
-                            <Tippy content='Edit Project Title' placement='top' theme='material'>
-                                <button
-                                    onClick={handleProjectTitleEditClick}
-                                    className={styles.editProjectBtn}
-                                >
-                                    <FontAwesomeIcon icon={faEdit} />
-                                </button>
-                            </Tippy>
-                            <Tippy content='Change Project Color' placement='top' theme='material'>
-                                <div className={styles.colorPickerContainer}>
-                                    <button
-                                        ref={colorPickerButtonRef}
-                                        onClick={() => {
-                                            if (colorPickerButtonRef.current) {
-                                                const rect =
-                                                    colorPickerButtonRef.current.getBoundingClientRect();
-                                                setColorPickerPosition({
-                                                    top: rect.bottom + window.scrollY + 5,
-                                                    left: rect.left + window.scrollX
-                                                });
-                                            }
-                                            setShowColorPicker(!showColorPicker);
-                                        }}
-                                        className={styles.editProjectBtn}
-                                    >
-                                        <FontAwesomeIcon icon={faPalette} />
-                                    </button>
-                                </div>
-                            </Tippy>
-                            <Tippy content='Delete Project' placement='top' theme='material'>
-                                <button
-                                    onClick={() => onDeleteProject(project.id)}
-                                    className={styles.editProjectBtn}
-                                >
-                                    <FontAwesomeIcon icon={faTrashAlt} />
-                                </button>
-                            </Tippy>
-                        </>
-                    )}
+                            <FontAwesomeIcon icon={faTrashAlt} />
+                        </button>
+                    </Tippy>
                 </div>
             </div>
 
@@ -912,41 +835,7 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
                     <p className={styles.noTasksMessage}>No tasks yet. Add one below!</p>
                 )}
             </div>
-            {showColorPicker &&
-                ReactDOM.createPortal(
-                    <div
-                        ref={colorPickerPopoverRef}
-                        style={{
-                            position: 'absolute',
-                            top: `${colorPickerPosition.top}px`,
-                            left: `${colorPickerPosition.left}px`,
-                            zIndex: 1060
-                        }}
-                        className={styles.colorPickerPopover}
-                    >
-                        <HexColorPicker
-                            color={project.taskColor || '#ffffff'}
-                            onChange={handleSetProjectTaskColor}
-                        />
-                        <div className={styles.predefinedColors}>
-                            {PREDEFINED_TASK_COLORS.map((color) => (
-                                <button
-                                    key={color}
-                                    style={{ backgroundColor: color }}
-                                    className={styles.colorOption}
-                                    onClick={() => handleSetProjectTaskColor(color)}
-                                />
-                            ))}
-                        </div>
-                        <button
-                            className={styles.clearColorButton}
-                            onClick={() => handleSetProjectTaskColor(undefined)}
-                        >
-                            Clear Color
-                        </button>
-                    </div>,
-                    document.body
-                )}
+
             {calendarOpenForTaskId &&
                 ReactDOM.createPortal(
                     <div
@@ -990,6 +879,86 @@ const ProjectLane: React.FC<ProjectLaneProps> = ({
                             }
                             minDate={new Date()}
                         />
+                    </div>,
+                    document.body
+                )}
+            {/* Edit Project Dialog */}
+            {isEditDialogOpen &&
+                ReactDOM.createPortal(
+                    <div className={styles.editDialogOverlay}>
+                        <div className={styles.editDialog}>
+                            <div className={styles.editDialogHeader}>
+                                <h3>Edit Project</h3>
+                            </div>
+                            <div className={styles.editDialogContent}>
+                                <div className={styles.editDialogField}>
+                                    <label htmlFor='projectTitle'>Title:</label>
+                                    <input
+                                        id='projectTitle'
+                                        type='text'
+                                        value={editDialogTitle}
+                                        onChange={(e) => setEditDialogTitle(e.target.value)}
+                                        className={styles.editDialogInput}
+                                    />
+                                </div>
+                                <div className={styles.editDialogField}>
+                                    <label htmlFor='projectColor'>Background Color:</label>
+                                    <div className={styles.colorPickerSection}>
+                                        <HexColorPicker
+                                            color={editDialogColor}
+                                            onChange={setEditDialogColor}
+                                            className={styles.dialogColorPicker}
+                                        />
+                                        <div className={styles.predefinedColors}>
+                                            {PREDEFINED_TASK_COLORS.map((color) => (
+                                                <button
+                                                    key={color}
+                                                    type='button'
+                                                    style={{ backgroundColor: color }}
+                                                    className={styles.colorOption}
+                                                    onClick={() => setEditDialogColor(color)}
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className={styles.editDialogField}>
+                                    <label htmlFor='projectPosition'>Position:</label>
+                                    <select
+                                        id='projectPosition'
+                                        value={editDialogPosition}
+                                        onChange={(e) =>
+                                            setEditDialogPosition(Number(e.target.value))
+                                        }
+                                        className={styles.editDialogSelect}
+                                    >
+                                        {Array.from({ length: totalProjects }, (_, i) => i + 1).map(
+                                            (pos) => (
+                                                <option key={pos} value={pos}>
+                                                    {pos}
+                                                </option>
+                                            )
+                                        )}
+                                    </select>
+                                </div>
+                            </div>
+                            <div className={styles.editDialogActions}>
+                                <button
+                                    type='button'
+                                    onClick={handleSaveEditDialog}
+                                    className={styles.saveButton}
+                                >
+                                    Save
+                                </button>
+                                <button
+                                    type='button'
+                                    onClick={handleCloseEditDialog}
+                                    className={styles.cancelButton}
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
                     </div>,
                     document.body
                 )}

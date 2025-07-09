@@ -190,6 +190,21 @@ const App: FC = () => {
         setNextProjectId(maxId < 0 ? 1 : maxId + 1); // Ensure nextId is at least 1
     }, [projects, dataLoaded]);
 
+    // Ensure all projects have position values
+    useEffect(() => {
+        if (dataLoaded && projects.length > 0) {
+            const projectsNeedingPosition = projects.filter((p) => !p.position);
+            if (projectsNeedingPosition.length > 0) {
+                setProjects((prevProjects) =>
+                    prevProjects.map((p, index) => ({
+                        ...p,
+                        position: p.position || index + 1
+                    }))
+                );
+            }
+        }
+    }, [dataLoaded, projects]);
+
     // Save projects to IndexedDB
     useEffect(() => {
         if (dataLoaded) {
@@ -242,14 +257,22 @@ const App: FC = () => {
             id: `project-${nextProjectId}`,
             title: `Project ${nextProjectId}`,
             tasks: [],
-            taskColor: getRandomPastelColor()
+            taskColor: getRandomPastelColor(),
+            position: projects.length + 1
         };
         setProjects([...projects, newProject]);
         // nextProjectId will update via its own useEffect
     };
 
     const handleDeleteProject = (projectId: string) => {
-        setProjects(projects.filter((p) => p.id !== projectId));
+        setProjects((prevProjects) => {
+            const filtered = prevProjects.filter((p) => p.id !== projectId);
+            // Adjust positions after deletion
+            return filtered.map((p, index) => ({
+                ...p,
+                position: index + 1
+            }));
+        });
     };
 
     const handleUpdateProjectTitle = (projectId: string, newTitle: string) => {
@@ -262,6 +285,26 @@ const App: FC = () => {
                 p.id === projectId ? { ...p, taskColor: newTaskColor || getRandomPastelColor() } : p
             )
         );
+    };
+
+    const handleUpdateProjectPosition = (projectId: string, newPosition: number) => {
+        setProjects((prevProjects) => {
+            const updatedProjects = [...prevProjects];
+            const projectIndex = updatedProjects.findIndex((p) => p.id === projectId);
+            if (projectIndex === -1) return prevProjects;
+
+            const [project] = updatedProjects.splice(projectIndex, 1);
+            project.position = newPosition;
+
+            // Insert at the new position
+            updatedProjects.splice(newPosition - 1, 0, project);
+
+            // Update positions for all projects to maintain sequence
+            return updatedProjects.map((p, index) => ({
+                ...p,
+                position: index + 1
+            }));
+        });
     };
 
     const handleUpdateTask = (
@@ -378,21 +421,25 @@ const App: FC = () => {
                         No projects available. Click the '+' button to add a new project.
                     </div>
                 ) : (
-                    searchedProjects.map((project) => (
-                        <ProjectLane
-                            key={project.id}
-                            project={project}
-                            people={globalPeople} // Changed from availablePeople to globalPeople (state)
-                            findOrCreatePerson={handleFindOrCreatePerson} // Added prop
-                            onDeleteProject={handleDeleteProject}
-                            onUpdateProjectTitle={handleUpdateProjectTitle}
-                            onUpdateTask={handleUpdateTask}
-                            onAddTask={handleAddTask}
-                            onDeleteTask={handleDeleteTask}
-                            onUpdateProjectTaskColor={handleUpdateProjectTaskColor}
-                            highlightTerm={searchTerm}
-                        />
-                    ))
+                    searchedProjects
+                        .sort((a, b) => (a.position || 0) - (b.position || 0))
+                        .map((project) => (
+                            <ProjectLane
+                                key={project.id}
+                                project={project}
+                                people={globalPeople} // Changed from availablePeople to globalPeople (state)
+                                findOrCreatePerson={handleFindOrCreatePerson} // Added prop
+                                onDeleteProject={handleDeleteProject}
+                                onUpdateProjectTitle={handleUpdateProjectTitle}
+                                onUpdateTask={handleUpdateTask}
+                                onAddTask={handleAddTask}
+                                onDeleteTask={handleDeleteTask}
+                                onUpdateProjectTaskColor={handleUpdateProjectTaskColor}
+                                onUpdateProjectPosition={handleUpdateProjectPosition}
+                                totalProjects={projects.length}
+                                highlightTerm={searchTerm}
+                            />
+                        ))
                 )}
             </main>
             <PreferencesDialog
