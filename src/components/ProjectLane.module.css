@@ -162,6 +162,10 @@
     right: 5px;
 }
 
+.taskCard.archived {
+    opacity: 0.5;
+}
+
 .taskHeader {
     display: flex;
     justify-content: space-between;
@@ -212,6 +216,20 @@
 
 .deleteTaskBtn:hover {
     color: #ff4d4f; /* Standard delete color on hover */
+}
+
+.archiveTaskBtn {
+    background: none;
+    border: none;
+    color: #666; /* Slightly lighter color for archive button */
+    font-size: 0.9em;
+    cursor: pointer;
+    padding: 0 3px;
+    line-height: 1;
+}
+
+.archiveTaskBtn:hover {
+    color: #1890ff; /* Blue color on hover for archive */
 }
 
 .taskItemsContainer {

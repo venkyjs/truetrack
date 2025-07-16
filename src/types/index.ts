@@ -17,6 +17,7 @@ export interface Task {
     assignedPersons: string[]; // Array of Person IDs
     reminder?: Date | string; // ISO string or Date object
     color?: string; // Optional: if tasks can have individual colors override project default
+    archived?: boolean; // Optional: indicates if task is archived
 }
 
 export interface Project {
