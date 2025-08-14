@@ -1,0 +1,17 @@
+# Cursor Rules for TrueTrack Project
+
+## Always Include in Context
+
+-   Always include @.cursor/project-docs.md in the context for every prompt
+-   This file contains the complete architecture overview, data flow, conventions, and guidelines for the TrueTrack project
+
+## Project Guidelines
+
+-   Don't create readme documentation unless explicitly asked
+-   Don't auto-run the app after making changes
+-   Do not refactor any code that is not necessary or explicitly requested
+-   Never add inline styles. Always create classes and add the CSS to a .css file
+-   Follow the conventions outlined in the project documentation
+-   Update types in src/types/index.ts before changing persisted data shapes
+-   Use CSS Modules for styling, avoid inline styles
+-   Maintain the existing search index and persistence patterns

@@ -205,7 +205,29 @@ const App: FC = () => {
         }
     }, [dataLoaded, projects]);
 
-    // Save projects to IndexedDB
+    const syncData = async () => {
+        if (!navigator.onLine) {
+            console.log('Offline. Skipping sync.');
+            return;
+        }
+        try {
+            const response = await fetch('http://localhost:3000/sync', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ projects, globalPeople }),
+            });
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            console.log('Data synced with backend');
+        } catch (error) {
+            console.error('Failed to sync data with backend:', error);
+        }
+    };
+
+    // Save projects to IndexedDB and sync with backend
     useEffect(() => {
         if (dataLoaded) {
             // Check only dataLoaded
@@ -229,6 +251,10 @@ const App: FC = () => {
                     console.error('Failed to remove globalPeopleData from IndexedDB', error)
                 );
             }
+        }
+
+        if (dataLoaded) {
+            syncData();
         }
     }, [projects, globalPeople, dataLoaded]);
 
