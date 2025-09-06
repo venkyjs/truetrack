@@ -1,8 +1,16 @@
 import { useState, useRef, useEffect } from 'react';
 import type { FC } from 'react';
+import { Link } from 'react-router-dom';
 import styles from './AppHeader.module.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCog, faPlus, faSearch, faTimes } from '@fortawesome/free-solid-svg-icons';
+import {
+    faCog,
+    faPlus,
+    faSearch,
+    faTimes,
+    faStickyNote,
+    faHome
+} from '@fortawesome/free-solid-svg-icons';
 import Tippy from '@tippyjs/react';
 import 'tippy.js/dist/tippy.css'; // Default Tippy CSS
 import 'tippy.js/themes/light.css'; // Optional: if you want a base light theme to customize from
@@ -12,9 +20,15 @@ interface AppHeaderProps {
     onOpenPreferences: () => void;
     onAddProject: () => void;
     onSearchChange: (searchTerm: string) => void;
+    currentPath: string;
 }
 
-const AppHeader: FC<AppHeaderProps> = ({ onOpenPreferences, onAddProject, onSearchChange }) => {
+const AppHeader: FC<AppHeaderProps> = ({
+    onOpenPreferences,
+    onAddProject,
+    onSearchChange,
+    currentPath
+}) => {
     const [isSearchVisible, setIsSearchVisible] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const searchContainerRef = useRef<HTMLDivElement>(null);
@@ -57,48 +71,83 @@ const AppHeader: FC<AppHeaderProps> = ({ onOpenPreferences, onAddProject, onSear
     return (
         <header className={styles.appHeader}>
             <div className={styles.logoContainer}>
-                <img src={logo} alt='TrueTrack!' className={styles.logo} />
+                <Link to='/'>
+                    <img src={logo} alt='TrueTrack!' className={styles.logo} />
+                </Link>
             </div>
+
+            <div className={styles.navigationContainer}>
+                <Tippy content='Projects' placement='bottom' theme='material'>
+                    <Link
+                        to='/'
+                        className={`${styles.navButton} ${
+                            currentPath === '/' ? styles.active : ''
+                        }`}
+                    >
+                        <FontAwesomeIcon icon={faHome} />
+                        <span>Projects</span>
+                    </Link>
+                </Tippy>
+                <Tippy content='Notes' placement='bottom' theme='material'>
+                    <Link
+                        to='/notes'
+                        className={`${styles.navButton} ${
+                            currentPath === '/notes' ? styles.active : ''
+                        }`}
+                    >
+                        <FontAwesomeIcon icon={faStickyNote} />
+                        <span>Notes</span>
+                    </Link>
+                </Tippy>
+            </div>
+
             <div className={styles.headerControls}>
-                <div
-                    ref={searchContainerRef}
-                    className={`${styles.searchContainer} ${
-                        isSearchVisible ? styles.searchVisible : ''
-                    }`}
-                    onBlur={handleSearchBlur}
-                >
-                    <Tippy content='Search' placement='bottom' theme='material'>
-                        <button
-                            onClick={handleSearchIconClick}
-                            className={`${styles.controlButton} ${styles.searchButton}`}
+                {currentPath === '/' && (
+                    <>
+                        <div
+                            ref={searchContainerRef}
+                            className={`${styles.searchContainer} ${
+                                isSearchVisible ? styles.searchVisible : ''
+                            }`}
+                            onBlur={handleSearchBlur}
                         >
-                            <FontAwesomeIcon icon={faSearch} />
-                        </button>
-                    </Tippy>
-                    <input
-                        ref={searchInputRef}
-                        type='text'
-                        placeholder='Search projects...'
-                        className={styles.searchInput}
-                        value={searchTerm}
-                        onChange={handleSearchChange}
-                    />
-                    {searchTerm && (
-                        <Tippy content='Clear Search' placement='bottom' theme='material'>
-                            <button onClick={clearSearch} className={styles.clearSearchButton}>
-                                <FontAwesomeIcon icon={faTimes} />
+                            <Tippy content='Search' placement='bottom' theme='material'>
+                                <button
+                                    onClick={handleSearchIconClick}
+                                    className={`${styles.controlButton} ${styles.searchButton}`}
+                                >
+                                    <FontAwesomeIcon icon={faSearch} />
+                                </button>
+                            </Tippy>
+                            <input
+                                ref={searchInputRef}
+                                type='text'
+                                placeholder='Search projects...'
+                                className={styles.searchInput}
+                                value={searchTerm}
+                                onChange={handleSearchChange}
+                            />
+                            {searchTerm && (
+                                <Tippy content='Clear Search' placement='bottom' theme='material'>
+                                    <button
+                                        onClick={clearSearch}
+                                        className={styles.clearSearchButton}
+                                    >
+                                        <FontAwesomeIcon icon={faTimes} />
+                                    </button>
+                                </Tippy>
+                            )}
+                        </div>
+                        <Tippy content='Add New Project' placement='bottom' theme='material'>
+                            <button
+                                onClick={onAddProject}
+                                className={`${styles.controlButton} ${styles.addProjectButton}`}
+                            >
+                                <FontAwesomeIcon icon={faPlus} />
                             </button>
                         </Tippy>
-                    )}
-                </div>
-                <Tippy content='Add New Project' placement='bottom' theme='material'>
-                    <button
-                        onClick={onAddProject}
-                        className={`${styles.controlButton} ${styles.addProjectButton}`}
-                    >
-                        <FontAwesomeIcon icon={faPlus} />
-                    </button>
-                </Tippy>
+                    </>
+                )}
                 <Tippy content='Preferences' placement='bottom' theme='material'>
                     <button
                         onClick={onOpenPreferences}

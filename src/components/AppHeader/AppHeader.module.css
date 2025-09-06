@@ -14,10 +14,53 @@
     align-items: center;
 }
 
+.logoContainer a {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+}
+
 .logo {
     height: 40px;
     width: auto;
     object-fit: contain;
+    transition: opacity 0.2s ease;
+}
+
+.logo:hover {
+    opacity: 0.8;
+}
+
+.navigationContainer {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.navButton {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.navButton:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.navButton.active {
+    background-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 2px 8px rgba(255, 255, 255, 0.1);
+}
+
+.navButton span {
+    font-family: 'Montserrat Alternates', sans-serif;
 }
 
 .headerControls {

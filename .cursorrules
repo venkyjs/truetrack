@@ -15,3 +15,4 @@
 -   Update types in src/types/index.ts before changing persisted data shapes
 -   Use CSS Modules for styling, avoid inline styles
 -   Maintain the existing search index and persistence patterns
+

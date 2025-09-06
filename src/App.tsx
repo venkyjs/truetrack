@@ -1,12 +1,14 @@
 import { useState, useEffect, useMemo } from 'react';
 import type { FC } from 'react';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 // import { дорога } from './assets'; // Removed unused import causing error
 // Import global types
-import type { Project, Task as ProjectTask, Person } from './types';
+import type { Project, Task as ProjectTask, Person, Note } from './types';
 import { idbGet, idbSet, idbRemove } from './utils/indexedDB'; // Added import
 // import { addProject, getProjects, updateProject, deleteProject } from './utils/indexedDB'; // This was the original error from the build output relating to an incorrect import
 
 import ProjectLane from './components/ProjectLane';
+import Notes from './components/Notes/Notes';
 import styles from './App.module.css';
 import AppHeader from './components/AppHeader/AppHeader';
 import PreferencesDialog from './components/PreferencesDialog/PreferencesDialog';
@@ -71,8 +73,10 @@ const initialGlobalPeople: Person[] = [
 //   },
 // ];
 
-const App: FC = () => {
+const AppContent: FC = () => {
+    const location = useLocation();
     const [projects, setProjects] = useState<Project[]>([]);
+    const [notes, setNotes] = useState<Note[]>([]);
     const [nextProjectId, setNextProjectId] = useState<number>(1);
     const [isPreferencesOpen, setIsPreferencesOpen] = useState<boolean>(false);
     const [appWallpaper, setAppWallpaper] = useState<string | null>(null);
@@ -121,6 +125,7 @@ const App: FC = () => {
         const loadData = async () => {
             try {
                 const savedProjects = await idbGet<Project[]>('projectsData');
+                const savedNotes = await idbGet<Note[]>('notesData');
                 const wallpaper = await idbGet<string>('appWallpaper');
                 const savedPeople = await idbGet<Person[]>('globalPeopleData'); // Load people
 
@@ -144,6 +149,24 @@ const App: FC = () => {
                     // setInitialLoadHasProjects(false); // Part of the original unused variable
                 }
 
+                if (savedNotes && savedNotes.length > 0) {
+                    const parsedNotes = savedNotes.map((n: Note) => ({
+                        ...n,
+                        creationDate:
+                            typeof n.creationDate === 'string'
+                                ? n.creationDate
+                                : n.creationDate.toISOString(),
+                        followUpDate: n.followUpDate
+                            ? typeof n.followUpDate === 'string'
+                                ? n.followUpDate
+                                : n.followUpDate.toISOString()
+                            : undefined
+                    }));
+                    setNotes(parsedNotes);
+                } else {
+                    setNotes([]);
+                }
+
                 if (savedPeople && savedPeople.length > 0) {
                     // If people are saved, use them
                     setGlobalPeople(savedPeople);
@@ -164,6 +187,7 @@ const App: FC = () => {
                 console.error('Failed to load data from IndexedDB', error);
                 // Fallback to empty state if IDB fails
                 setProjects([]);
+                setNotes([]);
                 // setInitialLoadHasProjects(false); // Part of the original unused variable
             } finally {
                 setDataLoaded(true);
@@ -171,6 +195,13 @@ const App: FC = () => {
         };
         loadData();
     }, []);
+
+    // Load notes from backend after initial data is loaded
+    useEffect(() => {
+        if (dataLoaded) {
+            loadNotesFromBackend();
+        }
+    }, [dataLoaded]);
 
     // Effect to derive nextProjectId from projects
     useEffect(() => {
@@ -214,9 +245,9 @@ const App: FC = () => {
             const response = await fetch('http://localhost:3000/sync', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
+                    'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ projects, globalPeople }),
+                body: JSON.stringify({ projects, globalPeople, notes })
             });
             if (!response.ok) {
                 throw new Error('Network response was not ok');
@@ -227,7 +258,29 @@ const App: FC = () => {
         }
     };
 
-    // Save projects to IndexedDB and sync with backend
+    const loadNotesFromBackend = async () => {
+        if (!navigator.onLine) {
+            console.log('Offline. Skipping notes sync.');
+            return;
+        }
+        try {
+            const response = await fetch('http://localhost:3000/notes');
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const backendNotes = await response.json();
+            if (backendNotes && backendNotes.length > 0) {
+                setNotes(backendNotes);
+                // Also save to IndexedDB
+                await idbSet('notesData', backendNotes);
+            }
+            console.log('Notes loaded from backend');
+        } catch (error) {
+            console.error('Failed to load notes from backend:', error);
+        }
+    };
+
+    // Save data to IndexedDB and sync with backend
     useEffect(() => {
         if (dataLoaded) {
             // Check only dataLoaded
@@ -241,6 +294,18 @@ const App: FC = () => {
                     console.error('Failed to remove projectsData from IndexedDB', error)
                 );
             }
+
+            // Save notes to IndexedDB whenever it changes after initial load
+            if (notes.length > 0) {
+                idbSet('notesData', notes).catch((error) =>
+                    console.error('Failed to save notes to IndexedDB', error)
+                );
+            } else {
+                idbRemove('notesData').catch((error) =>
+                    console.error('Failed to remove notesData from IndexedDB', error)
+                );
+            }
+
             // Save globalPeople to IndexedDB whenever it changes after initial load
             if (globalPeople.length > 0) {
                 idbSet('globalPeopleData', globalPeople).catch((error) =>
@@ -256,7 +321,7 @@ const App: FC = () => {
         if (dataLoaded) {
             syncData();
         }
-    }, [projects, globalPeople, dataLoaded]);
+    }, [projects, notes, globalPeople, dataLoaded]);
 
     // Save wallpaper and update body style
     useEffect(() => {
@@ -411,6 +476,39 @@ const App: FC = () => {
         setSearchTerm(newSearchTerm);
     };
 
+    const handleAddNote = async (noteData: {
+        text: string;
+        people: string[];
+        followUpDate?: Date;
+    }) => {
+        const newNote: Note = {
+            id: `note-${crypto.randomUUID()}`,
+            text: noteData.text,
+            people: noteData.people,
+            followUpDate: noteData.followUpDate?.toISOString(),
+            creationDate: new Date().toISOString()
+        };
+
+        // Update local state immediately
+        setNotes((prevNotes) => [newNote, ...prevNotes]);
+
+        // Sync with backend
+        if (navigator.onLine) {
+            try {
+                await fetch('http://localhost:3000/notes', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(newNote)
+                });
+                console.log('Note synced with backend');
+            } catch (error) {
+                console.error('Failed to sync note with backend:', error);
+            }
+        }
+    };
+
     const searchedProjects = useMemo(() => {
         if (!searchTerm) {
             return projects;
@@ -436,37 +534,63 @@ const App: FC = () => {
                 onOpenPreferences={() => setIsPreferencesOpen(true)}
                 onAddProject={handleAddProject}
                 onSearchChange={handleSearchChange}
+                currentPath={location.pathname}
             />
-            <main
-                className={`${styles.mainContentContainer} ${
-                    dataLoaded && projects.length === 0 ? styles.centerContent : ''
-                }`}
-            >
-                {dataLoaded && projects.length === 0 ? (
-                    <div className={styles.noProjectsMessage}>
-                        No projects available. Click the '+' button to add a new project.
-                    </div>
-                ) : (
-                    searchedProjects
-                        .sort((a, b) => (a.position || 0) - (b.position || 0))
-                        .map((project) => (
-                            <ProjectLane
-                                key={project.id}
-                                project={project}
-                                people={globalPeople} // Changed from availablePeople to globalPeople (state)
-                                findOrCreatePerson={handleFindOrCreatePerson} // Added prop
-                                onDeleteProject={handleDeleteProject}
-                                onUpdateProjectTitle={handleUpdateProjectTitle}
-                                onUpdateTask={handleUpdateTask}
-                                onAddTask={handleAddTask}
-                                onDeleteTask={handleDeleteTask}
-                                onUpdateProjectTaskColor={handleUpdateProjectTaskColor}
-                                onUpdateProjectPosition={handleUpdateProjectPosition}
-                                totalProjects={projects.length}
-                                highlightTerm={searchTerm}
+            <main className={styles.mainContentContainer}>
+                <Routes>
+                    <Route
+                        path='/'
+                        element={
+                            <div
+                                className={
+                                    dataLoaded && projects.length === 0 ? styles.centerContent : ''
+                                }
+                            >
+                                {dataLoaded && projects.length === 0 ? (
+                                    <div className={styles.noProjectsMessage}>
+                                        No projects available. Click the '+' button to add a new
+                                        project.
+                                    </div>
+                                ) : (
+                                    searchedProjects
+                                        .sort((a, b) => (a.position || 0) - (b.position || 0))
+                                        .map((project) => (
+                                            <ProjectLane
+                                                key={project.id}
+                                                project={project}
+                                                people={globalPeople} // Changed from availablePeople to globalPeople (state)
+                                                findOrCreatePerson={handleFindOrCreatePerson} // Added prop
+                                                onDeleteProject={handleDeleteProject}
+                                                onUpdateProjectTitle={handleUpdateProjectTitle}
+                                                onUpdateTask={handleUpdateTask}
+                                                onAddTask={handleAddTask}
+                                                onDeleteTask={handleDeleteTask}
+                                                onUpdateProjectTaskColor={
+                                                    handleUpdateProjectTaskColor
+                                                }
+                                                onUpdateProjectPosition={
+                                                    handleUpdateProjectPosition
+                                                }
+                                                totalProjects={projects.length}
+                                                highlightTerm={searchTerm}
+                                            />
+                                        ))
+                                )}
+                            </div>
+                        }
+                    />
+                    <Route
+                        path='/notes'
+                        element={
+                            <Notes
+                                notes={notes}
+                                people={globalPeople}
+                                onAddNote={handleAddNote}
+                                onFindOrCreatePerson={handleFindOrCreatePerson}
                             />
-                        ))
-                )}
+                        }
+                    />
+                </Routes>
             </main>
             <PreferencesDialog
                 isOpen={isPreferencesOpen}
@@ -474,6 +598,14 @@ const App: FC = () => {
                 onWallpaperChange={handleWallpaperChange}
             />
         </>
+    );
+};
+
+const App: FC = () => {
+    return (
+        <Router>
+            <AppContent />
+        </Router>
     );
 };
 
