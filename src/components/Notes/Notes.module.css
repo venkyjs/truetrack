@@ -90,6 +90,7 @@
     font-size: 14px;
     transition: border-color 0.2s ease;
     box-sizing: border-box;
+    background: rgba(0, 0, 0, 0.2);
 }
 
 .peopleInput:focus {
@@ -190,7 +191,19 @@
 
 .datePicker {
     width: 100%;
-    position: relative;
+    padding: 10px 12px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border-color 0.2s ease;
+    box-sizing: border-box;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.datePicker:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 /* Main wrapper - this creates the single border around everything */

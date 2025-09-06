@@ -149,7 +149,6 @@ const Notes: FC<NotesProps> = ({ notes, people, onAddNote, onFindOrCreatePerson 
 
                 <div className={styles.formRow}>
                     <div className={styles.peopleSection}>
-                        <label className={styles.label}>People:</label>
                         <div className={styles.peopleInputContainer}>
                             <input
                                 type='text'
@@ -225,11 +224,10 @@ const Notes: FC<NotesProps> = ({ notes, people, onAddNote, onFindOrCreatePerson 
                     </div>
 
                     <div className={styles.dateSection}>
-                        <label className={styles.label}>Follow-up Date:</label>
                         <Flatpickr
                             value={followUpDate || undefined}
                             onChange={handleFollowUpDateChange}
-                            placeholder='Select a date...'
+                            placeholder='Follow-up Date'
                             className={styles.datePicker}
                         />
                     </div>
