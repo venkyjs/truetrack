@@ -137,109 +137,108 @@ const Notes: FC<NotesProps> = ({ notes, people, onAddNote, onFindOrCreatePerson 
 
             {/* Note Input Form */}
             <div className={styles.inputSection}>
-                <div className={styles.noteInputContainer}>
-                    <textarea
-                        className={styles.noteInput}
-                        placeholder='Type your note here...'
-                        value={noteText}
-                        onChange={(e) => setNoteText(e.target.value)}
-                        rows={4}
-                    />
-                </div>
-
-                <div className={styles.formRow}>
-                    <div className={styles.peopleSection}>
-                        <div className={styles.peopleInputContainer}>
-                            <input
-                                type='text'
-                                className={styles.peopleInput}
-                                placeholder='Add people...'
-                                value={peopleInput}
-                                onChange={(e) => setPeopleInput(e.target.value)}
-                                onFocus={() => setShowPeopleSuggestions(true)}
-                                onBlur={() => {
-                                    // Delay hiding suggestions to allow clicking
-                                    setTimeout(() => setShowPeopleSuggestions(false), 200);
-                                }}
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter' && peopleInput.trim()) {
-                                        e.preventDefault();
-                                        handleCreateNewPerson();
-                                    }
-                                }}
-                            />
-
-                            {showPeopleSuggestions && (
-                                <div className={styles.suggestions}>
-                                    {peopleSuggestions.map((person) => (
-                                        <div
-                                            key={person.id}
-                                            className={styles.suggestion}
-                                            onMouseDown={() => handleAddPerson(person.id)}
-                                        >
-                                            <div className={styles.personInitials}>
-                                                {person.initials}
-                                            </div>
-                                            {person.name}
-                                        </div>
-                                    ))}
-                                    {peopleInput.trim() &&
-                                        !peopleSuggestions.some(
-                                            (p) =>
-                                                p.name.toLowerCase() === peopleInput.toLowerCase()
-                                        ) && (
-                                            <div
-                                                className={`${styles.suggestion} ${styles.createNew}`}
-                                                onMouseDown={handleCreateNewPerson}
-                                            >
-                                                Create "{peopleInput}"
-                                            </div>
-                                        )}
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Selected People */}
-                        {selectedPeople.length > 0 && (
-                            <div className={styles.selectedPeople}>
-                                {selectedPeople.map((personId) => {
-                                    const person = getPersonById(personId);
-                                    return person ? (
-                                        <div key={personId} className={styles.selectedPerson}>
-                                            <div className={styles.personInitials}>
-                                                {person.initials}
-                                            </div>
-                                            <span>{person.name}</span>
-                                            <button
-                                                className={styles.removeButton}
-                                                onClick={() => handleRemovePerson(personId)}
-                                            >
-                                                ×
-                                            </button>
-                                        </div>
-                                    ) : null;
-                                })}
-                            </div>
-                        )}
-                    </div>
-
-                    <div className={styles.dateSection}>
-                        <Flatpickr
-                            value={followUpDate || undefined}
-                            onChange={handleFollowUpDateChange}
-                            placeholder='Follow-up Date'
-                            className={styles.datePicker}
+                <div className={styles.noteInputLayout}>
+                    <div className={styles.noteInputContainer}>
+                        <textarea
+                            className={styles.noteInput}
+                            placeholder='Type your note here...'
+                            value={noteText}
+                            onChange={(e) => setNoteText(e.target.value)}
+                            rows={4}
                         />
                     </div>
+                    <div className={styles.actionsContainer}>
+                        <div className={styles.peopleSection}>
+                            <div className={styles.peopleInputContainer}>
+                                <input
+                                    type='text'
+                                    className={styles.peopleInput}
+                                    placeholder='Add people...'
+                                    value={peopleInput}
+                                    onChange={(e) => setPeopleInput(e.target.value)}
+                                    onFocus={() => setShowPeopleSuggestions(true)}
+                                    onBlur={() => {
+                                        // Delay hiding suggestions to allow clicking
+                                        setTimeout(() => setShowPeopleSuggestions(false), 200);
+                                    }}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' && peopleInput.trim()) {
+                                            e.preventDefault();
+                                            handleCreateNewPerson();
+                                        }
+                                    }}
+                                />
+
+                                {showPeopleSuggestions && (
+                                    <div className={styles.suggestions}>
+                                        {peopleSuggestions.map((person) => (
+                                            <div
+                                                key={person.id}
+                                                className={styles.suggestion}
+                                                onMouseDown={() => handleAddPerson(person.id)}
+                                            >
+                                                <div className={styles.personInitials}>
+                                                    {person.initials}
+                                                </div>
+                                                {person.name}
+                                            </div>
+                                        ))}
+                                        {peopleInput.trim() &&
+                                            !peopleSuggestions.some(
+                                                (p) =>
+                                                    p.name.toLowerCase() ===
+                                                    peopleInput.toLowerCase()
+                                            ) && (
+                                                <div
+                                                    className={`${styles.suggestion} ${styles.createNew}`}
+                                                    onMouseDown={handleCreateNewPerson}
+                                                >
+                                                    Create "{peopleInput}"
+                                                </div>
+                                            )}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className={styles.dateSection}>
+                            <Flatpickr
+                                value={followUpDate || undefined}
+                                onChange={handleFollowUpDateChange}
+                                placeholder='Follow-up Date'
+                                className={styles.datePicker}
+                            />
+                        </div>
+                        <button
+                            className={styles.addButton}
+                            onClick={handleAddNote}
+                            disabled={!noteText.trim()}
+                        >
+                            Add Note
+                        </button>
+                    </div>
                 </div>
 
-                <button
-                    className={styles.addButton}
-                    onClick={handleAddNote}
-                    disabled={!noteText.trim()}
-                >
-                    Add Note
-                </button>
+                {/* Selected People */}
+                {selectedPeople.length > 0 && (
+                    <div className={styles.selectedPeople}>
+                        {selectedPeople.map((personId) => {
+                            const person = getPersonById(personId);
+                            return person ? (
+                                <div key={personId} className={styles.selectedPerson}>
+                                    <div className={styles.personInitials}>{person.initials}</div>
+                                    <span>{person.name}</span>
+                                    <button
+                                        className={styles.removeButton}
+                                        onClick={() => handleRemovePerson(personId)}
+                                    >
+                                        ×
+                                    </button>
+                                </div>
+                            ) : null;
+                        })}
+                    </div>
+                )}
             </div>
 
             {/* Notes Display */}
