@@ -60,7 +60,7 @@ const Notes: FC<NotesProps> = ({ notes, people, onAddNote, onFindOrCreatePerson 
         const sortedGroups = Object.keys(groups)
             .sort((a, b) => new Date(b).getTime() - new Date(a).getTime())
             .map((dateKey) => ({
-                date: new Date(dateKey),
+                date: new Date(`${dateKey}T00:00:00`),
                 notes: groups[dateKey]
             }));
 
@@ -131,10 +131,6 @@ const Notes: FC<NotesProps> = ({ notes, people, onAddNote, onFindOrCreatePerson 
 
     return (
         <div className={styles.notesContainer}>
-            <div className={styles.header}>
-                <h1>Notes</h1>
-            </div>
-
             {/* Note Input Form */}
             <div className={styles.inputSection}>
                 <div className={styles.noteInputLayout}>
