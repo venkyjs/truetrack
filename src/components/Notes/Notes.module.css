@@ -436,6 +436,12 @@
     white-space: pre-wrap;
 }
 
+.noteContent {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
 .noteMetadata {
     display: flex;
     align-items: center;
@@ -463,10 +469,10 @@
     cursor: default;
 }
 
-.noteDetails {
+.noteActions {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 8px;
     font-size: 12px;
     color: #6b7280;
 }
@@ -476,8 +482,53 @@
 }
 
 .followUpDate {
-    color: #dc2626;
-    font-weight: 500;
+    color: #ccc;
+    font-size: 10px;
+}
+
+.menuContainer {
+    position: relative;
+    display: inline-block;
+}
+
+.menuButton {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 20px;
+    color: #6b7280;
+    padding: 0 4px;
+    line-height: 1;
+}
+
+.menuButton:hover {
+    color: #374151;
+}
+
+.menu {
+    position: absolute;
+    right: 0;
+    top: 100%;
+    background-color: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+    width: 120px;
+    padding: 8px 0;
+    margin-top: 4px;
+}
+
+.menuItem {
+    padding: 10px 16px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #374151;
+    transition: background-color 0.2s ease;
+}
+
+.menuItem:hover {
+    background-color: #f3f4f6;
 }
 
 /* Responsive Design */

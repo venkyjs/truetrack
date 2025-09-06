@@ -509,6 +509,22 @@ const AppContent: FC = () => {
         }
     };
 
+    const handleUpdateNote = (updatedNote: Note) => {
+        setNotes((prevNotes) =>
+            prevNotes.map((note) => (note.id === updatedNote.id ? updatedNote : note))
+        );
+    };
+
+    const handleArchiveNote = (noteId: string) => {
+        setNotes((prevNotes) =>
+            prevNotes.map((note) => (note.id === noteId ? { ...note, isArchived: true } : note))
+        );
+    };
+
+    const handleDeleteNote = (noteId: string) => {
+        setNotes((prevNotes) => prevNotes.filter((note) => note.id !== noteId));
+    };
+
     const searchedProjects = useMemo(() => {
         if (!searchTerm) {
             return projects;
@@ -586,6 +602,9 @@ const AppContent: FC = () => {
                                 notes={notes}
                                 people={globalPeople}
                                 onAddNote={handleAddNote}
+                                onUpdateNote={handleUpdateNote}
+                                onArchiveNote={handleArchiveNote}
+                                onDeleteNote={handleDeleteNote}
                                 onFindOrCreatePerson={handleFindOrCreatePerson}
                             />
                         }

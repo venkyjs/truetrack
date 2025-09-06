@@ -10,15 +10,28 @@ interface NotesProps {
     notes: Note[];
     people: Person[];
     onAddNote: (noteData: { text: string; people: string[]; followUpDate?: Date }) => void;
+    onUpdateNote: (note: Note) => void;
+    onArchiveNote: (noteId: string) => void;
+    onDeleteNote: (noteId: string) => void;
     onFindOrCreatePerson: (name: string) => string;
 }
 
-const Notes: FC<NotesProps> = ({ notes, people, onAddNote, onFindOrCreatePerson }) => {
+const Notes: FC<NotesProps> = ({
+    notes,
+    people,
+    onAddNote,
+    onUpdateNote,
+    onArchiveNote,
+    onDeleteNote,
+    onFindOrCreatePerson
+}) => {
     const [noteText, setNoteText] = useState('');
     const [selectedPeople, setSelectedPeople] = useState<string[]>([]);
     const [followUpDate, setFollowUpDate] = useState<Date | null>(null);
     const [peopleInput, setPeopleInput] = useState('');
     const [showPeopleSuggestions, setShowPeopleSuggestions] = useState(false);
+    const [editingNote, setEditingNote] = useState<Note | null>(null);
+    const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
     // Filter people suggestions based on input
     const peopleSuggestions = useMemo(() => {
@@ -32,7 +45,9 @@ const Notes: FC<NotesProps> = ({ notes, people, onAddNote, onFindOrCreatePerson 
     const groupedNotes = useMemo(() => {
         const groups: { [key: string]: Note[] } = {};
 
-        notes.forEach((note) => {
+        const activeNotes = notes.filter((note) => !note.isArchived);
+
+        activeNotes.forEach((note) => {
             const creationDate =
                 typeof note.creationDate === 'string'
                     ? new Date(note.creationDate)
@@ -67,20 +82,38 @@ const Notes: FC<NotesProps> = ({ notes, people, onAddNote, onFindOrCreatePerson 
         return sortedGroups;
     }, [notes]);
 
-    const handleAddNote = () => {
+    const handleAddOrUpdateNote = () => {
         if (!noteText.trim()) return;
 
-        onAddNote({
-            text: noteText.trim(),
-            people: selectedPeople,
-            followUpDate: followUpDate || undefined
-        });
+        if (editingNote) {
+            onUpdateNote({
+                ...editingNote,
+                text: noteText.trim(),
+                people: selectedPeople,
+                followUpDate: followUpDate || undefined
+            });
+        } else {
+            onAddNote({
+                text: noteText.trim(),
+                people: selectedPeople,
+                followUpDate: followUpDate || undefined
+            });
+        }
 
         // Reset form
         setNoteText('');
         setSelectedPeople([]);
         setFollowUpDate(null);
         setPeopleInput('');
+        setEditingNote(null);
+    };
+
+    const handleEditNote = (note: Note) => {
+        setEditingNote(note);
+        setNoteText(note.text);
+        setSelectedPeople(note.people);
+        setFollowUpDate(note.followUpDate ? new Date(note.followUpDate as string) : null);
+        setOpenMenuId(null);
     };
 
     const handleAddPerson = (personId: string) => {
@@ -207,10 +240,10 @@ const Notes: FC<NotesProps> = ({ notes, people, onAddNote, onFindOrCreatePerson 
                         </div>
                         <button
                             className={styles.addButton}
-                            onClick={handleAddNote}
+                            onClick={handleAddOrUpdateNote}
                             disabled={!noteText.trim()}
                         >
-                            Add Note
+                            {editingNote ? 'Update Note' : 'Add Note'}
                         </button>
                     </div>
                 </div>
@@ -250,7 +283,20 @@ const Notes: FC<NotesProps> = ({ notes, people, onAddNote, onFindOrCreatePerson 
 
                             {dayNotes.map((note) => (
                                 <div key={note.id} className={styles.noteItem}>
-                                    <div className={styles.noteText}>{note.text}</div>
+                                    <div className={styles.noteContent}>
+                                        <div className={styles.noteText}>{note.text}</div>
+                                        {note.followUpDate && (
+                                            <div className={styles.followUpDate}>
+                                                Follow-up:{' '}
+                                                {format(
+                                                    typeof note.followUpDate === 'string'
+                                                        ? new Date(note.followUpDate)
+                                                        : note.followUpDate,
+                                                    'MMMM d, yyyy'
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
 
                                     <div className={styles.noteMetadata}>
                                         <div className={styles.notePeople}>
@@ -268,21 +314,50 @@ const Notes: FC<NotesProps> = ({ notes, people, onAddNote, onFindOrCreatePerson 
                                             })}
                                         </div>
 
-                                        <div className={styles.noteDetails}>
+                                        <div className={styles.noteActions}>
                                             <span className={styles.creationTime}>
                                                 {formatTime(note.creationDate)}
                                             </span>
-                                            {note.followUpDate && (
-                                                <span className={styles.followUpDate}>
-                                                    Follow-up:{' '}
-                                                    {format(
-                                                        typeof note.followUpDate === 'string'
-                                                            ? new Date(note.followUpDate)
-                                                            : note.followUpDate,
-                                                        'MMM d, yyyy'
-                                                    )}
-                                                </span>
-                                            )}
+                                            <div className={styles.menuContainer}>
+                                                <button
+                                                    className={styles.menuButton}
+                                                    onClick={() =>
+                                                        setOpenMenuId(
+                                                            openMenuId === note.id ? null : note.id
+                                                        )
+                                                    }
+                                                >
+                                                    &#x22EE;
+                                                </button>
+                                                {openMenuId === note.id && (
+                                                    <div className={styles.menu}>
+                                                        <div
+                                                            className={styles.menuItem}
+                                                            onClick={() => handleEditNote(note)}
+                                                        >
+                                                            Edit
+                                                        </div>
+                                                        <div
+                                                            className={styles.menuItem}
+                                                            onClick={() => {
+                                                                onArchiveNote(note.id);
+                                                                setOpenMenuId(null);
+                                                            }}
+                                                        >
+                                                            Archive
+                                                        </div>
+                                                        <div
+                                                            className={styles.menuItem}
+                                                            onClick={() => {
+                                                                onDeleteNote(note.id);
+                                                                setOpenMenuId(null);
+                                                            }}
+                                                        >
+                                                            Delete
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

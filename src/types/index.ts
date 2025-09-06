@@ -39,4 +39,5 @@ export interface Note {
     people: string[]; // Array of Person IDs
     followUpDate?: Date | string; // ISO string or Date object
     creationDate: Date | string; // ISO string or Date object
+    isArchived?: boolean;
 }
