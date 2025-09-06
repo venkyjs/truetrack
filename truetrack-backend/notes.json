@@ -1,1 +1,16 @@
-[]
+[
+  {
+    "id": "note-4cad5e8f-9408-48f7-a455-f29c29a25123",
+    "text": "Test",
+    "people": [
+      "person-1"
+    ],
+    "creationDate": "2025-09-06T12:27:14.954Z"
+  },
+  {
+    "id": "note-dfb9a9dd-bbf8-4e1b-81bc-b4d0ec98dc82",
+    "text": "Something",
+    "people": [],
+    "creationDate": "2025-09-06T12:27:35.591Z"
+  }
+]
