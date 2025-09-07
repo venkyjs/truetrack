@@ -34,15 +34,37 @@ const Notes: FC<NotesProps> = ({
     const [openMenuId, setOpenMenuId] = useState<string | null>(null);
     const dateInputRef = useRef<HTMLInputElement>(null);
     const pikadayRef = useRef<Pikaday | null>(null);
+    const isSettingDateProgrammatically = useRef(false);
 
     // Initialize Pikaday
     useEffect(() => {
         if (dateInputRef.current && !pikadayRef.current) {
+            console.log(' initializing Pikaday');
             pikadayRef.current = new Pikaday({
                 field: dateInputRef.current,
                 format: 'YYYY-MM-DD',
                 onSelect: (date: Date) => {
-                    setFollowUpDate(date);
+                    console.log(' onSelect date', date);
+
+                    // Ignore programmatic date changes
+                    if (isSettingDateProgrammatically.current) {
+                        isSettingDateProgrammatically.current = false;
+                        return;
+                    }
+
+                    setFollowUpDate((currentDate) => {
+                        const newDateString = date.toISOString().split('T')[0];
+                        const currentDateString = currentDate
+                            ? currentDate.toISOString().split('T')[0]
+                            : null;
+
+                        // Only hide the calendar if a different date was selected
+                        if (newDateString !== currentDateString && pikadayRef.current) {
+                            pikadayRef.current.hide();
+                        }
+
+                        return date;
+                    });
                 }
             });
         }
@@ -58,6 +80,7 @@ const Notes: FC<NotesProps> = ({
     // Update Pikaday when followUpDate changes externally (e.g., when editing a note)
     useEffect(() => {
         if (pikadayRef.current) {
+            isSettingDateProgrammatically.current = true;
             if (followUpDate) {
                 pikadayRef.current.setDate(followUpDate);
             } else {
