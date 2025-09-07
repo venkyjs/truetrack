@@ -49,6 +49,12 @@ const Notes: FC<NotesProps> = ({
                         return;
                     }
 
+                    // Handle null/undefined dates (when clearing)
+                    if (!date) {
+                        setFollowUpDate(null);
+                        return;
+                    }
+
                     setFollowUpDate((currentDate) => {
                         const newDateString = date.toISOString().split('T')[0];
                         const currentDateString = currentDate
@@ -81,7 +87,13 @@ const Notes: FC<NotesProps> = ({
             if (followUpDate) {
                 pikadayRef.current.setDate(followUpDate);
             } else {
-                pikadayRef.current.setDate(null);
+                // Clear the input field directly instead of using setDate(null)
+                // which might not work consistently across Pikaday versions
+                if (dateInputRef.current) {
+                    dateInputRef.current.value = '';
+                }
+                // Reset the flag since we're not calling setDate
+                isSettingDateProgrammatically.current = false;
             }
         }
     }, [followUpDate]);
@@ -221,6 +233,12 @@ const Notes: FC<NotesProps> = ({
                             placeholder='Type your note here...'
                             value={noteText}
                             onChange={(e) => setNoteText(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' && e.ctrlKey) {
+                                    e.preventDefault();
+                                    handleAddOrUpdateNote();
+                                }
+                            }}
                             rows={4}
                         />
                     </div>
