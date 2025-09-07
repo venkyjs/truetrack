@@ -14,7 +14,6 @@ const makeApiCall = async <T = any>(
     options: RequestInit = {}
 ): Promise<ApiResponse<T>> => {
     if (!navigator.onLine) {
-        console.log('Offline. Skipping API call.');
         return { success: false, error: 'Offline' };
     }
 
@@ -61,7 +60,6 @@ export const notesApi = {
     async getAllNotes(): Promise<ApiResponse<Note[]>> {
         const result = await makeApiCall<Note[]>('/api/notes');
         if (result.success) {
-            console.log('Notes loaded from backend');
         } else {
             console.error('Failed to load notes from backend:', result.error);
         }
@@ -77,7 +75,6 @@ export const notesApi = {
             body: JSON.stringify(note)
         });
         if (result.success) {
-            console.log('Note synced with backend');
         } else {
             console.error('Failed to sync note with backend:', result.error);
         }
@@ -93,7 +90,6 @@ export const notesApi = {
             body: JSON.stringify(note)
         });
         if (result.success) {
-            console.log('Note updated on backend');
         } else {
             console.error('Failed to update note on backend:', result.error);
         }
@@ -108,7 +104,6 @@ export const notesApi = {
             method: 'DELETE'
         });
         if (result.success) {
-            console.log('Note deleted on backend');
         } else {
             console.error('Failed to delete note on backend:', result.error);
         }
@@ -125,7 +120,6 @@ export const notesApi = {
             body: JSON.stringify(archivedNote)
         });
         if (result.success) {
-            console.log('Note archived on backend');
         } else {
             console.error('Failed to archive note on backend:', result.error);
         }
@@ -150,7 +144,6 @@ export const syncApi = {
             body: JSON.stringify(data)
         });
         if (result.success) {
-            console.log('Data synced with backend');
         } else {
             console.error('Failed to sync data with backend:', result.error);
         }

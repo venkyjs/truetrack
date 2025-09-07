@@ -122,7 +122,6 @@ const AppContent: FC = () => {
                 this.ref('id');
                 this.field('title');
                 this.field('tasks');
-                console.log('Building search index with projects:', projects);
                 projects.forEach((project) => {
                     const data = {
                         id: project.id,
@@ -137,7 +136,6 @@ const AppContent: FC = () => {
                             })
                             .join(' ')
                     };
-                    console.log('Adding project:', data);
                     this.add(data);
                 });
             });
@@ -531,7 +529,6 @@ const AppContent: FC = () => {
 
         try {
             const results = searchIndex.search(`*${searchTerm}*`);
-            console.log('Search results:', results);
             const projectIds = results.map((result) => result.ref);
             return projects.filter((project) => projectIds.includes(project.id));
         } catch (e) {

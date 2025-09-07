@@ -39,13 +39,10 @@ const Notes: FC<NotesProps> = ({
     // Initialize Pikaday
     useEffect(() => {
         if (dateInputRef.current && !pikadayRef.current) {
-            console.log(' initializing Pikaday');
             pikadayRef.current = new Pikaday({
                 field: dateInputRef.current,
                 format: 'YYYY-MM-DD',
                 onSelect: (date: Date) => {
-                    console.log(' onSelect date', date);
-
                     // Ignore programmatic date changes
                     if (isSettingDateProgrammatically.current) {
                         isSettingDateProgrammatically.current = false;
