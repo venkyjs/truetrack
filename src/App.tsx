@@ -5,6 +5,7 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 // Import global types
 import type { Project, Task as ProjectTask, Person, Note } from './types';
 import { idbGet, idbSet, idbRemove } from './utils/indexedDB'; // Added import
+import { notesApi, syncApi } from './utils/apiUtils';
 // import { addProject, getProjects, updateProject, deleteProject } from './utils/indexedDB'; // This was the original error from the build output relating to an incorrect import
 
 import ProjectLane from './components/ProjectLane';
@@ -237,46 +238,15 @@ const AppContent: FC = () => {
     }, [dataLoaded, projects]);
 
     const syncData = async () => {
-        if (!navigator.onLine) {
-            console.log('Offline. Skipping sync.');
-            return;
-        }
-        try {
-            const response = await fetch('http://localhost:3000/sync', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ projects, globalPeople, notes })
-            });
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            console.log('Data synced with backend');
-        } catch (error) {
-            console.error('Failed to sync data with backend:', error);
-        }
+        await syncApi.syncData({ projects, globalPeople, notes });
     };
 
     const loadNotesFromBackend = async () => {
-        if (!navigator.onLine) {
-            console.log('Offline. Skipping notes sync.');
-            return;
-        }
-        try {
-            const response = await fetch('http://localhost:3000/notes');
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            const backendNotes = await response.json();
-            if (backendNotes && backendNotes.length > 0) {
-                setNotes(backendNotes);
-                // Also save to IndexedDB
-                await idbSet('notesData', backendNotes);
-            }
-            console.log('Notes loaded from backend');
-        } catch (error) {
-            console.error('Failed to load notes from backend:', error);
+        const result = await notesApi.getAllNotes();
+        if (result.success && result.data && result.data.length > 0) {
+            setNotes(result.data);
+            // Also save to IndexedDB
+            await idbSet('notesData', result.data);
         }
     };
 
@@ -493,36 +463,38 @@ const AppContent: FC = () => {
         setNotes((prevNotes) => [newNote, ...prevNotes]);
 
         // Sync with backend
-        if (navigator.onLine) {
-            try {
-                await fetch('http://localhost:3000/notes', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(newNote)
-                });
-                console.log('Note synced with backend');
-            } catch (error) {
-                console.error('Failed to sync note with backend:', error);
-            }
-        }
+        await notesApi.createNote(newNote);
     };
 
-    const handleUpdateNote = (updatedNote: Note) => {
+    const handleUpdateNote = async (updatedNote: Note) => {
+        // Update local state immediately
         setNotes((prevNotes) =>
             prevNotes.map((note) => (note.id === updatedNote.id ? updatedNote : note))
         );
+
+        // Sync with backend
+        await notesApi.updateNote(updatedNote);
     };
 
-    const handleArchiveNote = (noteId: string) => {
+    const handleArchiveNote = async (noteId: string) => {
+        // Update local state immediately
         setNotes((prevNotes) =>
             prevNotes.map((note) => (note.id === noteId ? { ...note, isArchived: true } : note))
         );
+
+        // Sync with backend
+        const noteToArchive = notes.find((note) => note.id === noteId);
+        if (noteToArchive) {
+            await notesApi.archiveNote(noteToArchive);
+        }
     };
 
-    const handleDeleteNote = (noteId: string) => {
+    const handleDeleteNote = async (noteId: string) => {
+        // Update local state immediately
         setNotes((prevNotes) => prevNotes.filter((note) => note.id !== noteId));
+
+        // Sync with backend
+        await notesApi.deleteNote(noteId);
     };
 
     const searchedProjects = useMemo(() => {

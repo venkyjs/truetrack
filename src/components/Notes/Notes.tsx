@@ -1,7 +1,7 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import type { FC } from 'react';
-import Flatpickr from 'react-flatpickr';
-import 'flatpickr/dist/themes/material_blue.css';
+import Pikaday from 'pikaday';
+import 'pikaday/css/pikaday.css';
 import { format, startOfDay, isSameDay } from 'date-fns';
 import type { Note, Person } from '../../types';
 import styles from './Notes.module.css';
@@ -32,6 +32,39 @@ const Notes: FC<NotesProps> = ({
     const [showPeopleSuggestions, setShowPeopleSuggestions] = useState(false);
     const [editingNote, setEditingNote] = useState<Note | null>(null);
     const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+    const dateInputRef = useRef<HTMLInputElement>(null);
+    const pikadayRef = useRef<Pikaday | null>(null);
+
+    // Initialize Pikaday
+    useEffect(() => {
+        if (dateInputRef.current && !pikadayRef.current) {
+            pikadayRef.current = new Pikaday({
+                field: dateInputRef.current,
+                format: 'YYYY-MM-DD',
+                onSelect: (date: Date) => {
+                    setFollowUpDate(date);
+                }
+            });
+        }
+
+        return () => {
+            if (pikadayRef.current) {
+                pikadayRef.current.destroy();
+                pikadayRef.current = null;
+            }
+        };
+    }, []);
+
+    // Update Pikaday when followUpDate changes externally (e.g., when editing a note)
+    useEffect(() => {
+        if (pikadayRef.current) {
+            if (followUpDate) {
+                pikadayRef.current.setDate(followUpDate);
+            } else {
+                pikadayRef.current.setDate(null);
+            }
+        }
+    }, [followUpDate]);
 
     // Filter people suggestions based on input
     const peopleSuggestions = useMemo(() => {
@@ -122,11 +155,6 @@ const Notes: FC<NotesProps> = ({
         }
         setPeopleInput('');
         setShowPeopleSuggestions(false);
-    };
-
-    // Normalize react-date-picker value to a single Date or null
-    const handleFollowUpDateChange = (dates: Date[]) => {
-        setFollowUpDate(dates[0] || null);
     };
 
     const handleCreateNewPerson = () => {
@@ -231,11 +259,12 @@ const Notes: FC<NotesProps> = ({
                         </div>
 
                         <div className={styles.dateSection}>
-                            <Flatpickr
-                                value={followUpDate || undefined}
-                                onChange={handleFollowUpDateChange}
+                            <input
+                                ref={dateInputRef}
+                                type='text'
                                 placeholder='Follow-up Date'
                                 className={styles.datePicker}
+                                readOnly
                             />
                         </div>
                         <button

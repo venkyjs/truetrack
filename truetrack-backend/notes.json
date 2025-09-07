@@ -19,6 +19,14 @@
     "people": [
       "person-2"
     ],
-    "creationDate": "2025-09-06T12:30:44.989Z"
+    "creationDate": "2025-09-06T12:30:44.989Z",
+    "followUpDate": "2025-09-08T04:00:00.000Z"
+  },
+  {
+    "id": "note-d31def1b-6806-4a4d-b47b-ef53de7a250c",
+    "text": "2323sfds",
+    "people": [],
+    "followUpDate": "2025-09-11T04:00:00.000Z",
+    "creationDate": "2025-09-07T15:32:52.481Z"
   }
 ]

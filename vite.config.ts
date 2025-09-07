@@ -8,5 +8,14 @@ export default defineConfig({
     build: {
         target: 'es2020',
         minify: false
+    },
+    server: {
+        proxy: {
+            '/api': {
+                target: 'http://localhost:3000',
+                changeOrigin: true,
+                rewrite: (path) => path.replace(/^\/api/, '')
+            }
+        }
     }
 });
