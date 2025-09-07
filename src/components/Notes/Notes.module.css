@@ -214,6 +214,7 @@
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     background: white !important;
     font-family: 'Montserrat Alternates', sans-serif;
+    overflow: hidden;
 }
 
 :global(.pika-single *) {
@@ -223,17 +224,25 @@
 :global(.pika-single .pika-lendar) {
     margin: 0;
     background: white !important;
+    width: 100%;
 }
 
 :global(.pika-single .pika-title) {
     background: #f8fafc !important;
     border-bottom: 1px solid #e5e7eb;
     padding: 12px;
-    border-radius: 6px 6px 0 0;
+    margin: 0;
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 :global(.pika-single .pika-table) {
     background: white !important;
+    width: 100%;
+    border-collapse: collapse;
 }
 
 :global(.pika-single .pika-title select) {
@@ -250,10 +259,15 @@
     font-size: 12px;
     color: #6b7280;
     font-weight: 600;
+    text-align: center;
+    width: 32px;
 }
 
 :global(.pika-single .pika-table td) {
     padding: 2px;
+    text-align: center;
+    width: 32px;
+    height: 36px;
 }
 
 :global(.pika-single .pika-button) {
@@ -266,6 +280,10 @@
     cursor: pointer;
     transition: all 0.2s ease;
     color: #374151;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
 }
 
 :global(.pika-single .pika-button:hover) {
