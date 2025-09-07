@@ -531,7 +531,9 @@ const AppContent: FC = () => {
                         element={
                             <div
                                 className={
-                                    dataLoaded && projects.length === 0 ? styles.centerContent : ''
+                                    dataLoaded && projects.length === 0
+                                        ? styles.centerContent
+                                        : styles.projectsContainer
                                 }
                             >
                                 {dataLoaded && projects.length === 0 ? (

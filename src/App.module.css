@@ -88,6 +88,16 @@ select {
     justify-content: center; /* Horizontal centering */
 }
 
+/* Projects container for proper flex layout */
+.projectsContainer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    align-items: flex-start;
+    align-content: flex-start;
+    width: 100%;
+}
+
 .mainContent {
     display: flex;
     flex-wrap: wrap; /* Allow project lanes to wrap */
