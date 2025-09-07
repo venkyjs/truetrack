@@ -6,6 +6,7 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 import type { Project, Task as ProjectTask, Person, Note } from './types';
 import { idbGet, idbSet, idbRemove } from './utils/indexedDB'; // Added import
 import { notesApi, syncApi } from './utils/apiUtils';
+import { useMasonry } from './hooks/useMasonry';
 // import { addProject, getProjects, updateProject, deleteProject } from './utils/indexedDB'; // This was the original error from the build output relating to an incorrect import
 
 import ProjectLane from './components/ProjectLane';
@@ -86,6 +87,29 @@ const AppContent: FC = () => {
     const [globalPeople, setGlobalPeople] = useState<Person[]>(initialGlobalPeople); // New state for people
     const [searchTerm, setSearchTerm] = useState<string>(''); // New state for search
     const [searchIndex, setSearchIndex] = useState<lunr.Index | null>(null);
+
+    // Initialize Masonry layout
+    const { containerRef, layout } = useMasonry({
+        dependencies: [projects, searchTerm],
+        options: {
+            itemSelector: '.masonry-item',
+            columnWidth: 300,
+            gutter: 16,
+            fitWidth: true,
+            percentPosition: false,
+            transitionDuration: '0.3s'
+        }
+    });
+
+    // Trigger layout when projects or search results change
+    useEffect(() => {
+        if (layout && dataLoaded && projects.length > 0) {
+            const timer = setTimeout(() => {
+                layout();
+            }, 300); // Longer delay to ensure DOM is fully rendered
+            return () => clearTimeout(timer);
+        }
+    }, [projects, searchTerm, dataLoaded, layout]);
     // const [isModalOpen, setIsModalOpen] = useState(false); // This was NOT part of the original App.tsx, it was currentProject from the old version
     // const [currentProject, setCurrentProject] = useState<Project | null>(null); // This was NOT part of the original App.tsx
     // const [selectedWallpaper, setSelectedWallpaper] = useState<string>(() => { // This was NOT part of the original App.tsx
@@ -529,44 +553,44 @@ const AppContent: FC = () => {
                     <Route
                         path='/'
                         element={
-                            <div
-                                className={
-                                    dataLoaded && projects.length === 0
-                                        ? styles.centerContent
-                                        : styles.projectsContainer
-                                }
-                            >
-                                {dataLoaded && projects.length === 0 ? (
+                            dataLoaded && projects.length === 0 ? (
+                                <div className={styles.centerContent}>
                                     <div className={styles.noProjectsMessage}>
                                         No projects available. Click the '+' button to add a new
                                         project.
                                     </div>
-                                ) : (
-                                    searchedProjects
+                                </div>
+                            ) : (
+                                <div className={styles.masonryContainer} ref={containerRef}>
+                                    {searchedProjects
                                         .sort((a, b) => (a.position || 0) - (b.position || 0))
                                         .map((project) => (
-                                            <ProjectLane
+                                            <div
                                                 key={project.id}
-                                                project={project}
-                                                people={globalPeople} // Changed from availablePeople to globalPeople (state)
-                                                findOrCreatePerson={handleFindOrCreatePerson} // Added prop
-                                                onDeleteProject={handleDeleteProject}
-                                                onUpdateProjectTitle={handleUpdateProjectTitle}
-                                                onUpdateTask={handleUpdateTask}
-                                                onAddTask={handleAddTask}
-                                                onDeleteTask={handleDeleteTask}
-                                                onUpdateProjectTaskColor={
-                                                    handleUpdateProjectTaskColor
-                                                }
-                                                onUpdateProjectPosition={
-                                                    handleUpdateProjectPosition
-                                                }
-                                                totalProjects={projects.length}
-                                                highlightTerm={searchTerm}
-                                            />
-                                        ))
-                                )}
-                            </div>
+                                                className={`${styles.masonryItem} masonry-item`}
+                                            >
+                                                <ProjectLane
+                                                    project={project}
+                                                    people={globalPeople} // Changed from availablePeople to globalPeople (state)
+                                                    findOrCreatePerson={handleFindOrCreatePerson} // Added prop
+                                                    onDeleteProject={handleDeleteProject}
+                                                    onUpdateProjectTitle={handleUpdateProjectTitle}
+                                                    onUpdateTask={handleUpdateTask}
+                                                    onAddTask={handleAddTask}
+                                                    onDeleteTask={handleDeleteTask}
+                                                    onUpdateProjectTaskColor={
+                                                        handleUpdateProjectTaskColor
+                                                    }
+                                                    onUpdateProjectPosition={
+                                                        handleUpdateProjectPosition
+                                                    }
+                                                    totalProjects={projects.length}
+                                                    highlightTerm={searchTerm}
+                                                />
+                                            </div>
+                                        ))}
+                                </div>
+                            )
                         }
                     />
                     <Route

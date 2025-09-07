@@ -88,14 +88,62 @@ select {
     justify-content: center; /* Horizontal centering */
 }
 
-/* Projects container for proper flex layout */
-.projectsContainer {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    align-items: flex-start;
-    align-content: flex-start;
+/* Masonry container for cascading grid layout */
+.masonryContainer {
+    position: relative;
     width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 16px;
+    box-sizing: border-box;
+}
+
+/* Masonry sizer element for responsive columns */
+.masonrySizer {
+    width: 300px; /* Fixed width for masonry calculation */
+}
+
+/* Masonry item wrapper */
+.masonryItem {
+    width: 300px; /* Fixed width matches sizer */
+    margin-bottom: 16px;
+    box-sizing: border-box;
+}
+
+/* Responsive breakpoints for columns */
+@media (min-width: 480px) {
+    .masonryContainer {
+        max-width: 632px; /* 2 * 300px + 2 * 16px gutter */
+    }
+    .masonrySizer,
+    .masonryItem {
+        width: 300px;
+    }
+}
+
+@media (min-width: 768px) {
+    .masonryContainer {
+        max-width: 948px; /* 3 * 300px + 3 * 16px gutter */
+    }
+    .masonrySizer,
+    .masonryItem {
+        width: 300px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .masonryContainer {
+        max-width: 1264px; /* 4 * 300px + 4 * 16px gutter */
+    }
+    .masonrySizer,
+    .masonryItem {
+        width: 300px;
+    }
+}
+
+/* Ensure smooth transitions */
+.masonryItem * {
+    transition: all 0.3s ease;
 }
 
 .mainContent {
